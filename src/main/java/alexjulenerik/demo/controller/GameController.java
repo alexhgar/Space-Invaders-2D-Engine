@@ -2,7 +2,7 @@ package alexjulenerik.demo.controller;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
-
+//ERIK
 public class GameController {
     @FXML
     private Label welcomeText;
