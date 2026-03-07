@@ -27,7 +27,18 @@ public class Pixel {
 
     public int getColumna(){
         return columna;
+    } public boolean estaVacio(){
+        if (estado.get() == EstadoPixel.VACIO){
+            return true;
+        }else {
+            return false;
+        }
     }
+
+    public SimpleObjectProperty<EstadoPixel> estadoProperty(){
+        return estado;
+    }
+
 }
 
 
