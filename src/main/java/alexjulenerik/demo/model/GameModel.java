@@ -1,9 +1,13 @@
 package alexjulenerik.demo.model;
 
 import javafx.application.Platform;
+
+import java.util.Iterator;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.List;
+import java.util.ArrayList;
 
 //ALEX
 public class GameModel {
@@ -15,7 +19,7 @@ public class GameModel {
     private Nave nave;
     
     private final List<Enemigo> listaEnemigos = new ArrayList<>();
-    private final List<Enemigo> listaDisparos = new ArrayList<>();
+    private final List<Disparo> listaDisparos = new ArrayList<>();
 
     private int direccionEnemigos = 1;
 
@@ -60,7 +64,7 @@ public class GameModel {
             } while (tablero[5][colRandom].getEstadoPixel() == EstadoPixel.ENEMIGO);
 
             Enemigo enemigo = new Enemigo(5, colRandom);
-            listaEnemigos.add(Enemigo);
+            listaEnemigos.add(enemigo);
             tablero[5][colRandom].setEstadoPixel(EstadoPixel.ENEMIGO);
 
         }
@@ -89,7 +93,7 @@ public class GameModel {
     timerDisparos.scheduleAtFixedRate(new TimerTask() {
         @Override
             public void run(){
-                Platform.runLater(() -> moverDisparos())
+                Platform.runLater(() -> moverDisparos());
                      
             };
     } ,0, 50);
@@ -114,7 +118,7 @@ public class GameModel {
         if (chocaBorde){
             direccionEnemigos *= -1;
             for (Enemigo e: listaEnemigos){
-                e.setPosicion(e.getFila() +1; e.getColumna());
+                e.setPosicion((e.getFila() +1), e.getColumna());
             }
         } else{
             for (Enemigo e : listaEnemigos){
