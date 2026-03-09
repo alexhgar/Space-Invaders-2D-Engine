@@ -2,13 +2,19 @@ package alexjulenerik.demo.controller;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
+
 //ERIK
 public class GameController {
     @FXML
-    private Label welcomeText;
+    //Enlazar los paneles de gameview.fxml
+    private GridPane pnlGame;
+    @FXML
+    private BorderPane pnlMain;
 
     @FXML
-    protected void onHelloButtonClick() {
-        welcomeText.setText("Welcome to JavaFX Application!");
+    public void initialize(){
+
     }
 }
