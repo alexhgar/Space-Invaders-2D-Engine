@@ -11,6 +11,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import alexjulenerik.demo.view.ViewFactory;
 
 //ERIK
 public class GameController {
@@ -32,12 +33,10 @@ public class GameController {
         }
         modelo.estadoJuegoProperty().addListener((observable, viejoEstado, nuevoEstado) -> {
             if (nuevoEstado.equals("VICTORIA")) {
-                Platform.runLater(() -> mostrarAlertaFin("Victoria", "Has derrotado a los enemigos"));
+                Platform.runLater(() -> ViewFactory.mostrarAlertaFin("Victoria", "Has derrotado a los enemigos"));
             } else {
                 if (nuevoEstado.equals("DERROTA")) {
-                    Platform.runLater(() -> mostrarAlertaFin("Derrota", "Suerte la proxima vez"));
-                } else {
-                    // El juego esta en curso
+                    Platform.runLater(() -> ViewFactory.mostrarAlertaFin("Derrota", "Suerte la proxima vez"));
                 }
             }
         });
@@ -79,14 +78,5 @@ public class GameController {
             case A -> modelo.moverNaveIzquierda();
             case SPACE -> modelo.disparar();
         }
-    }
-
-    private void mostrarAlertaFin(String titulo, String mensaje) {
-        javafx.scene.control.Alert alerta = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
-        alerta.setTitle("Fin de la partida");
-        alerta.setHeaderText(titulo);
-        alerta.setContentText(mensaje);
-        alerta.showAndWait();
-        Platform.exit();
     }
 }

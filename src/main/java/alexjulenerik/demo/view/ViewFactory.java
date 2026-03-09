@@ -4,6 +4,8 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import java.io.IOException;
+import javafx.application.Platform;
+import javafx.scene.control.Alert;
 //ERIK
 public class ViewFactory {
     public static void mostrarPantallaInicio() throws IOException{
@@ -29,4 +31,12 @@ public class ViewFactory {
         stage.show();
     }
 
+    public static void mostrarAlertaFin(String titulo, String mensaje) {
+        Alert alerta = new Alert(Alert.AlertType.INFORMATION);
+        alerta.setTitle("Fin de la partida");
+        alerta.setHeaderText(titulo);
+        alerta.setContentText(mensaje);
+        alerta.showAndWait();
+        Platform.exit();
+    }
 }
