@@ -6,5 +6,5 @@ module alexjulenerik.demo {
     opens alexjulenerik.demo to javafx.fxml;
     exports alexjulenerik.demo;
     opens alexjulenerik.demo.controller to javafx.fxml;
-    exports alexjulenerik.demo.controller to javafx.fxml;
+    exports alexjulenerik.demo.controller;
 }
