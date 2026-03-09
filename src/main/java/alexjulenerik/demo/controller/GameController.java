@@ -2,6 +2,7 @@ package alexjulenerik.demo.controller;
 
 import alexjulenerik.demo.model.GameModel;
 import alexjulenerik.demo.model.Pixel;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
@@ -29,15 +30,31 @@ public class GameController {
                 pnlGame.add(crearPixel(fila,columna),columna,fila);
             }
         }
+        modelo.estadoJuegoProperty().addListener((observable, viejoEstado, nuevoEstado) -> {
+            if (nuevoEstado.equals("VICTORIA")) {
+                Platform.runLater(() -> mostrarAlertaFin("Victoria", "Has derrotado a los enemigos"));
+            } else {
+                if (nuevoEstado.equals("DERROTA")) {
+                    Platform.runLater(() -> mostrarAlertaFin("Derrota", "Suerte la proxima vez"));
+                } else {
+                    // El juego esta en curso
+                }
+            }
+        });
         modelo.inicializarPartida();
+        //javafx empieza a escuchar las teclas pulsadas por teclado
+        Platform.runLater(() -> {
+            pnlMain.requestFocus();
+        });
     }
 
     private Node crearPixel(int fila, int columna){
         //Crea cada pixel individual
-        Rectangle rectangulo = new Rectangle();
+        Rectangle rectangulo = new Rectangle(10,10);
         var pixel = modelo.getPixel(fila,columna);
         setPixelColor(rectangulo,pixel);
-        pixel.estadoProperty().addListener(observable -> pixel.setEstadoPixel(pixel.getEstadoPixel()));
+        pixel.estadoProperty().addListener((observable, viejoEstado, nuevoEstado) -> {
+            setPixelColor(rectangulo, pixel);});
         return rectangulo;
     }
 
@@ -47,7 +64,7 @@ public class GameController {
         switch(estado){
             case NAVE -> rect.setFill(Color.GREEN);
             case ENEMIGO -> rect.setFill(Color.RED);
-            case DISPARO -> rect.setFill(Color.YELLOW);
+            case DISPARO -> rect.setFill(Color.WHITE);
             case VACIO -> rect.setFill(Color.BLACK);
         }
     }
@@ -62,5 +79,14 @@ public class GameController {
             case A -> modelo.moverNaveIzquierda();
             case SPACE -> modelo.disparar();
         }
+    }
+
+    private void mostrarAlertaFin(String titulo, String mensaje) {
+        javafx.scene.control.Alert alerta = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
+        alerta.setTitle("Fin de la partida");
+        alerta.setHeaderText(titulo);
+        alerta.setContentText(mensaje);
+        alerta.showAndWait();
+        Platform.exit();
     }
 }

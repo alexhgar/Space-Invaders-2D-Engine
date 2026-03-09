@@ -8,7 +8,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.List;
 import java.util.ArrayList;
-
+import javafx.beans.property.SimpleStringProperty;
 //ALEX
 public class GameModel {
 
@@ -30,6 +30,8 @@ public class GameModel {
     //Timers requeridos
     private Timer timerEnemigos;
     private Timer timerDisparos;
+
+    private final SimpleStringProperty estadoJuego = new SimpleStringProperty("ACTIVO");
     
     //Inicializamos cada celda de nuestra matriz con objetos Pixel
     private GameModel(){
@@ -49,6 +51,7 @@ public class GameModel {
 
     public void inicializarPartida(){
         //Reset de tablero/pantalla
+        estadoJuego.set("ACTIVO");
         for (int f= 0; f< FILAS; f++){
             for( int c=0; c< COLUMNAS; c++){
                 tablero[f][c].setEstadoPixel(EstadoPixel.VACIO);
@@ -112,6 +115,16 @@ public class GameModel {
             };
     } ,0, 50);
     }
+
+    private void detenerTimers() {
+        if (timerEnemigos != null){
+            timerEnemigos.cancel();
+        }
+        if (timerDisparos != null){
+            timerDisparos.cancel();
+        }
+    }
+
     //Algoritmo creado para el mviemiento secuencial de los enemigosd
     private void moverEnemigos(){
         if (listaEnemigos.isEmpty()){
@@ -126,29 +139,55 @@ public class GameModel {
             }
 
             //Calculamos nuevas posiciones teniendo limites en cuenta
+            boolean finPorDerrota = false;
+
             for (Enemigo e : listaEnemigos){
-                int movColumna= random.nextInt(3) -1;
-                int nuevaCol= e.getColumna() + movColumna;
+                int direccion = random.nextInt(3);
+                int nuevaFila = e.getFila();
+                int nuevaCol = e.getColumna();
 
-                if(nuevaCol <0){
-                    nuevaCol =0;
-                }
-                else if (nuevaCol >= COLUMNAS){
-                    nuevaCol = COLUMNAS -1;
+                if(direccion == 0) {
+                    nuevaCol = nuevaCol - 1;
+                } else {
+                    if (direccion == 1) {
+                        nuevaCol = nuevaCol + 1;
+                    }
+                    else {
+                        nuevaFila = nuevaFila + 1;
+                    }
                 }
 
-                int nuevaFila = e.getFila() +1;
-                if (nuevaFila < FILAS){
+                if(nuevaCol < 0){
+                    nuevaCol = 0;
+                } else {
+                    if (nuevaCol >= COLUMNAS){
+                        nuevaCol = COLUMNAS - 1;
+                    }
+                }
+
+                if(nuevaFila >= FILAS - 1) {
+                    finPorDerrota = true;
                     e.setPosicion(nuevaFila, nuevaCol);
+                } else {
+                    if(nave != null && nuevaFila == nave.getFila() && nuevaCol == nave.getColumna()) {
+                        finPorDerrota = true;
+                        e.setPosicion(nuevaFila, nuevaCol);
+                    } else {
+                        e.setPosicion(nuevaFila, nuevaCol);
+                    }
                 }
             }
-            
 
-            //Dibuijamos estas posiciones en nuestro tablero
+            // Dibuijamos estas posiciones en nuestro tablero
             for (Enemigo e : listaEnemigos){
                 if(e.getFila() < FILAS){
                     tablero[e.getFila()][e.getColumna()].setEstadoPixel(EstadoPixel.ENEMIGO);
                 }
+            }
+
+            if (finPorDerrota){
+                detenerTimers();
+                estadoJuego.set("DERROTA");
             }
         }
     }
@@ -163,19 +202,37 @@ public class GameModel {
         while (iterator.hasNext()){
             Disparo d = iterator.next();
 
-            //Borramos pos actual de la bala
-            if(d.getFila() >= 0 && d.getFila() < FILAS){
+            if (d.getFila() >= 0 && d.getFila() < FILAS){
                 tablero[d.getFila()][d.getColumna()].setEstadoPixel(EstadoPixel.VACIO);
             }
 
-            //Calculamos el movimiento hacia arriba
-            d.setPosicion(d.getFila() -1, d.getColumna());
+            int nuevaFila = d.getFila() - 1;
+            int col = d.getColumna();
 
-            //Si se sale la bala, la borramos de la lista
-            if(d.getFila()<0){
+            if (nuevaFila < 0) {
                 iterator.remove();
-            } else{
-                tablero[d.getFila()][d.getColumna()].setEstadoPixel(EstadoPixel.DISPARO);
+            } else {
+                if (tablero[nuevaFila][col].getEstadoPixel() == EstadoPixel.ENEMIGO) {
+                    iterator.remove();
+                    tablero[nuevaFila][col].setEstadoPixel(EstadoPixel.VACIO);
+
+                    Iterator<Enemigo> itEnemigo = listaEnemigos.iterator();
+                    while (itEnemigo.hasNext()) {
+                        Enemigo e = itEnemigo.next();
+                        if (e.getFila() == nuevaFila && e.getColumna() == col) {
+                            itEnemigo.remove();
+                            break;
+                        }
+                    }
+
+                    if (listaEnemigos.isEmpty()) {
+                        detenerTimers();
+                        estadoJuego.set("VICTORIA");
+                    }
+                } else {
+                    d.setPosicion(nuevaFila, col);
+                    tablero[nuevaFila][col].setEstadoPixel(EstadoPixel.DISPARO);
+                }
             }
         }
     }
@@ -183,9 +240,12 @@ public class GameModel {
     //Disparo desde nave
     public void disparar(){
         if(nave != null){
-            Disparo nuevoDisparo = new Disparo(nave.getFila() -1, nave.getColumna());
-            listaDisparos.add(nuevoDisparo);
-            tablero[nuevoDisparo.getFila()][nuevoDisparo.getColumna()].setEstadoPixel(EstadoPixel.DISPARO);
+            int filaDisparo = nave.getFila()-2;
+            if(filaDisparo >= 0) {
+                Disparo nuevoDisparo = new Disparo(nave.getFila() - 1, nave.getColumna());
+                listaDisparos.add(nuevoDisparo);
+                tablero[nuevoDisparo.getFila()][nuevoDisparo.getColumna()].setEstadoPixel(EstadoPixel.DISPARO);
+            }
         }
     }
 
@@ -201,7 +261,6 @@ public class GameModel {
             tablero[nave.getFila()][nave.getColumna()].setEstadoPixel(EstadoPixel.VACIO);
             nave.setPosicion(nave.getFila(), nave.getColumna() -1);
             tablero[nave.getFila()][nave.getColumna()].setEstadoPixel(EstadoPixel.NAVE);
-
         }
     }
 
@@ -211,5 +270,9 @@ public class GameModel {
             nave.setPosicion(nave.getFila(), nave.getColumna() +1);
             tablero[nave.getFila()][nave.getColumna()].setEstadoPixel(EstadoPixel.NAVE);
         }
+    }
+
+    public SimpleStringProperty estadoJuegoProperty() {
+        return estadoJuego;
     }
 }
