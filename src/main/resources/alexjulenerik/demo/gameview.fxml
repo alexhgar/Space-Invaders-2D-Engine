@@ -7,8 +7,9 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.control.Button?>
 
+
 <BorderPane fx:id="pnlMain" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
-            prefHeight="600.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1"
+            prefHeight="600.0" prefWidth="1000.0" onKeyPressed="#controles" focusTraversable="true" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="alexjulenerik.demo.controller.GameController">
     <center>
         <GridPane fx:id="pnlGame" gridLinesVisible="false" style="-fx-background-color: black;" BorderPane.alignment="CENTER">
