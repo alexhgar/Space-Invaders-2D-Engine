@@ -11,21 +11,27 @@ import java.util.ArrayList;
 
 //ALEX
 public class GameModel {
+
+    //Patron Singleton hecho
     private static final GameModel instance = new GameModel();
+    
+    //Defino el tamaño de area de nuestro juego
     public static final int FILAS = 60;
     public static final int COLUMNAS = 100;
 
+    //Matriz de objetos pixel que sera nuestra estructura de datos principal
     private final Pixel[][] tablero;
     private Nave nave;
     
+    //Listas dinamicas ya que gestionaremos actores que desaparecen y aparecen
     private final List<Enemigo> listaEnemigos = new ArrayList<>();
     private final List<Disparo> listaDisparos = new ArrayList<>();
 
-    private int direccionEnemigos = 1;
-
+    //Timers requeridos
     private Timer timerEnemigos;
     private Timer timerDisparos;
-
+    
+    //Inicializamos cada celda de nuestra matriz con objetos Pixel
     private GameModel(){
         tablero = new Pixel[FILAS][COLUMNAS];
         for (int f=0; f< FILAS; f++){
@@ -35,30 +41,35 @@ public class GameModel {
         }
     }
 
+    //Metodo para tener acceso al Singleton
     public static GameModel getInstance(){
         return instance;
     }
 
 
     public void inicializarPartida(){
+        //Reset de tablero/pantalla
         for (int f= 0; f< FILAS; f++){
             for( int c=0; c< COLUMNAS; c++){
                 tablero[f][c].setEstadoPixel(EstadoPixel.VACIO);
             }
         }
-
+ 
+        //Limpiamos colecciones para borrar partidas anteriores
         listaEnemigos.clear();
         listaDisparos.clear();
-        direccionEnemigos =1;
 
+        //Inicializamos nave en pos 55,50
         nave = new Nave(55, 50);
         tablero[nave.getFila()][nave.getColumna()].setEstadoPixel(EstadoPixel.NAVE);
 
+        //Generamos enemigos, entre 4 y 8
         Random random = new Random();
         int numEnemigos = random.nextInt(5) +4;
 
         for (int i=0; i< numEnemigos; i++){
             int colRandom;
+            //Añadido este algoritmo para evitar pisar enbemigos
             do{
                 colRandom = random.nextInt(COLUMNAS);
             } while (tablero[5][colRandom].getEstadoPixel() == EstadoPixel.ENEMIGO);
@@ -73,6 +84,7 @@ public class GameModel {
     }
 
     public void iniciarTimers(){
+        //Cancelamos timers previos
         if(timerEnemigos != null){
             timerEnemigos.cancel();
         }
@@ -82,6 +94,8 @@ public class GameModel {
 
         timerEnemigos = new Timer();
         timerDisparos = new Timer();
+
+        //Tareas timeadas a 200ms para enemigos y 50ms para disparos
 
         timerEnemigos.scheduleAtFixedRate(new TimerTask() {
             @Override
@@ -98,53 +112,65 @@ public class GameModel {
             };
     } ,0, 50);
     }
-
+    //Algoritmo creado para el mviemiento secuencial de los enemigosd
     private void moverEnemigos(){
-        if (listaEnemigos.isEmpty()) return;
-
-        boolean chocaBorde = false;
-
-        for (Enemigo e : listaEnemigos){
-            if (e.getColumna() + direccionEnemigos >= COLUMNAS || e.getColumna() + direccionEnemigos < 0){
-                chocaBorde = true;
-                break;
-            }
+        if (listaEnemigos.isEmpty()){
+            return;
         }
+        else{
+            Random random = new Random();
 
-        for (Enemigo e : listaEnemigos){
-            tablero[e.getFila()][e.getColumna()].setEstadoPixel(EstadoPixel.VACIO);
-        }
-
-        if (chocaBorde){
-            direccionEnemigos *= -1;
-            for (Enemigo e: listaEnemigos){
-                e.setPosicion((e.getFila() +1), e.getColumna());
-            }
-        } else{
+            //Borramos estado anterior de todos
             for (Enemigo e : listaEnemigos){
-                e.setPosicion(e.getFila(), e.getColumna() + direccionEnemigos);
+                tablero[e.getFila()][e.getColumna()].setEstadoPixel(EstadoPixel.VACIO);
             }
-        }
 
-        for (Enemigo e : listaEnemigos){
-            if(e.getFila() < FILAS){
-                tablero[e.getFila()][e.getColumna()].setEstadoPixel(EstadoPixel.ENEMIGO);
+            //Calculamos nuevas posiciones teniendo limites en cuenta
+            for (Enemigo e : listaEnemigos){
+                int movColumna= random.nextInt(3) -1;
+                int nuevaCol= e.getColumna() + movColumna;
+
+                if(nuevaCol <0){
+                    nuevaCol =0;
+                }
+                else if (nuevaCol >= COLUMNAS){
+                    nuevaCol = COLUMNAS -1;  
+                }
+
+                int nuevaFila = e.getFila() +1;
+                if (nuevaFila < FILAS){
+                    e.setPosicion(nuevaFila, nuevaCol)
+                }
+            }
+
+            //Dibuijamos estas posiciones en nuestro tablero
+            for (Enemigo e : listaEnemigos){
+                if(e.getFila() < FILAS){
+                    tablero[e.getFila()][e.getColumna()].setEstadoPixel(EstadoPixel.ENEMIGO);
+                }
             }
         }
     }
 
+        
+    
+
+    //Logica de movimiento de los disparos
     private void moverDisparos(){
         Iterator<Disparo> iterator = listaDisparos.iterator();
 
         while (iterator.hasNext()){
             Disparo d = iterator.next();
 
+            //Borramos pos actual de la bala
             if(d.getFila() >= 0 && d.getFila() < FILAS){
                 tablero[d.getFila()][d.getColumna()].setEstadoPixel(EstadoPixel.VACIO);
             }
 
+            //Calculamos el movimiento hacia arriba
             d.setPosicion(d.getFila() -1, d.getColumna());
 
+            //Si se sale la bala, la borramos de la lista
             if(d.getFila()<0){
                 iterator.remove();
             } else{
@@ -153,6 +179,7 @@ public class GameModel {
         }
     }
 
+    //Disparo desde nave
     public void disparar(){
         if(nave != null){
             Disparo nuevoDisparo = new Disparo(nave.getFila() -1, nave.getColumna());
@@ -162,10 +189,12 @@ public class GameModel {
     }
 
 
+    //Metodo necesario para que nuestr modelo vista/controlador obtenga la info en una casilla
     public Pixel getPixel(int f, int c){
         return tablero[f][c];
     }
 
+    //Metodos para controlar el movimiento de la nave y validando los bordes
     public void moverNaveIzquierda(){
         if (nave != null && nave.getColumna() > 0){
             tablero[nave.getFila()][nave.getColumna()].setEstadoPixel(EstadoPixel.VACIO);
