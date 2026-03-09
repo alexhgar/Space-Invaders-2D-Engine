@@ -134,14 +134,15 @@ public class GameModel {
                     nuevaCol =0;
                 }
                 else if (nuevaCol >= COLUMNAS){
-                    nuevaCol = COLUMNAS -1;  
+                    nuevaCol = COLUMNAS -1;
                 }
 
                 int nuevaFila = e.getFila() +1;
                 if (nuevaFila < FILAS){
-                    e.setPosicion(nuevaFila, nuevaCol)
+                    e.setPosicion(nuevaFila, nuevaCol);
                 }
             }
+            
 
             //Dibuijamos estas posiciones en nuestro tablero
             for (Enemigo e : listaEnemigos){
