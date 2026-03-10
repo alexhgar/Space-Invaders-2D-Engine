@@ -4,6 +4,7 @@ import alexjulenerik.demo.model.GameModel;
 import alexjulenerik.demo.model.Pixel;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.input.KeyEvent;
@@ -13,8 +14,11 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import alexjulenerik.demo.view.ViewFactory;
 
+import java.net.URL;
+import java.util.ResourceBundle;
+
 //ERIK
-public class GameController {
+public class GameController implements Initializable { //Initializable se asegura de que las variables fmxl no son nulas
     @FXML
     //Enlazar los paneles de gameview.fxml
     private GridPane pnlGame;
@@ -23,8 +27,8 @@ public class GameController {
 
     private static final GameModel modelo = GameModel.getInstance();
 
-    @FXML
-    public void initialize(){
+
+    public void initialize (URL url, ResourceBundle resources){
         //Dibuja la matriz de pixeles e inicializa la partida
         for (int fila = 0; fila<GameModel.FILAS; fila++){
             for(int columna = 0; columna<GameModel.COLUMNAS; columna++){
