@@ -72,8 +72,8 @@ public class GameController {
         // gestor de eventos que se llama cuando se pulsa una tecla
         // y que llama a los metodos de movimiento del modelo
         switch (evento.getCode()){
-            //case W -> modelo.moverNaveArriba();
-            //case S -> modelo.moverNaveAbajo();
+            case W -> modelo.moverNaveArriba();
+            case S -> modelo.moverNaveAbajo();
             case D -> modelo.moverNaveDerecha();
             case A -> modelo.moverNaveIzquierda();
             case SPACE -> modelo.disparar();

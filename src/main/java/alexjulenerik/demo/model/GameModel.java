@@ -272,6 +272,21 @@ public class GameModel {
         }
     }
 
+    public void moverNaveArriba() {
+        if (nave != null && nave.getFila() > 0) {
+            tablero[nave.getFila()][nave.getColumna()].setEstadoPixel(EstadoPixel.VACIO);
+            nave.setPosicion(nave.getFila() - 1, nave.getColumna());
+            tablero[nave.getFila()][nave.getColumna()].setEstadoPixel(EstadoPixel.NAVE);
+        }
+    }
+        public void moverNaveAbajo(){
+            if( nave != null && nave.getFila()<FILAS-1){
+                tablero[nave.getFila()][nave.getColumna()].setEstadoPixel(EstadoPixel.VACIO);
+                nave.setPosicion(nave.getFila()+1, nave.getColumna());
+                tablero[nave.getFila()][nave.getColumna()].setEstadoPixel(EstadoPixel.NAVE);
+            }
+    }
+
     public SimpleStringProperty estadoJuegoProperty() {
         return estadoJuego;
     }
