@@ -126,57 +126,85 @@ public class GameModel {
     }
 
     //Algoritmo creado para el mviemiento secuencial de los enemigosd
-    private void moverEnemigos(){
-        if (listaEnemigos.isEmpty()){
+    private void moverEnemigos() {
+        if (listaEnemigos.isEmpty()) {
             return;
-        }
-        else{
+        } else {
             Random random = new Random();
 
             //Borramos estado anterior de todos
-            for (Enemigo e : listaEnemigos){
+            for (Enemigo e : listaEnemigos) {
                 tablero[e.getFila()][e.getColumna()].setEstadoPixel(EstadoPixel.VACIO);
             }
 
             //Calculamos nuevas posiciones teniendo limites en cuenta
             boolean finPorDerrota = false;
 
-            for (Enemigo e : listaEnemigos){
+            Iterator<Enemigo> itEnemigos = listaEnemigos.iterator();
+
+            while (itEnemigos.hasNext()) {
+                Enemigo e = itEnemigos.next();
                 int direccion = random.nextInt(3);
                 int nuevaFila = e.getFila();
                 int nuevaCol = e.getColumna();
 
-                if(direccion == 0) {
+                if (direccion == 0) {
                     nuevaCol = nuevaCol - 1;
                 } else {
                     if (direccion == 1) {
                         nuevaCol = nuevaCol + 1;
-                    }
-                    else {
+                    } else {
                         nuevaFila = nuevaFila + 1;
                     }
                 }
 
-                if(nuevaCol < 0){
+                if (nuevaCol < 0) {
                     nuevaCol = 0;
                 } else {
-                    if (nuevaCol >= COLUMNAS){
+                    if (nuevaCol >= COLUMNAS) {
                         nuevaCol = COLUMNAS - 1;
                     }
                 }
+                boolean enemigoMuerto = false;
+                Iterator<Disparo> itDisparo = listaDisparos.iterator();
+                while (itDisparo.hasNext()) {
+                    Disparo d = itDisparo.next();
+                    if (d.getFila() == nuevaFila && d.getColumna() == nuevaCol) {
+                        itEnemigos.remove();
+                        itDisparo.remove();
+                        enemigoMuerto = true;
 
-                if(nuevaFila >= FILAS - 1) {
+                    if (listaEnemigos.isEmpty()) {
+                        detenerTimers();
+                        estadoJuego.set("VICTORIA");
+                    }
+                    break;
+                }
+            }
+            if (enemigoMuerto == false) {
+                if (nuevaFila < FILAS) {
+                    if (tablero[nuevaFila][nuevaCol].getEstadoPixel() == EstadoPixel.ENEMIGO) {
+                        // Choca con un colega, cancelamos el movimiento
+                        nuevaFila = e.getFila();
+                        nuevaCol = e.getColumna();
+                    }
+                }
+
+
+
+            if (nuevaFila >= FILAS - 1) {
+                finPorDerrota = true;
+                e.setPosicion(nuevaFila, nuevaCol);
+            } else {
+                if (nave != null && nuevaFila == nave.getFila() && nuevaCol == nave.getColumna()) {
                     finPorDerrota = true;
                     e.setPosicion(nuevaFila, nuevaCol);
                 } else {
-                    if(nave != null && nuevaFila == nave.getFila() && nuevaCol == nave.getColumna()) {
-                        finPorDerrota = true;
-                        e.setPosicion(nuevaFila, nuevaCol);
-                    } else {
-                        e.setPosicion(nuevaFila, nuevaCol);
-                    }
+                    e.setPosicion(nuevaFila, nuevaCol);
                 }
             }
+        }
+    }
 
             // Dibuijamos estas posiciones en nuestro tablero
             for (Enemigo e : listaEnemigos){
@@ -191,9 +219,6 @@ public class GameModel {
             }
         }
     }
-
-        
-    
 
     //Logica de movimiento de los disparos
     private void moverDisparos(){
