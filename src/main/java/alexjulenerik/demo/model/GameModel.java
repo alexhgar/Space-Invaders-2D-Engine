@@ -172,6 +172,8 @@ public class GameModel {
                     if (d.getFila() == nuevaFila && d.getColumna() == nuevaCol) {
                         itEnemigos.remove();
                         itDisparo.remove();
+                        //cambiamos el estado del pixel para que desaparezca en caso de impacto
+                        tablero[d.getFila()][d.getColumna()].setEstadoPixel(EstadoPixel.VACIO);
                         enemigoMuerto = true;
 
                     if (listaEnemigos.isEmpty()) {
@@ -283,32 +285,64 @@ public class GameModel {
     //Metodos para controlar el movimiento de la nave y validando los bordes
     public void moverNaveIzquierda(){
         if (nave != null && nave.getColumna() > 0){
-            tablero[nave.getFila()][nave.getColumna()].setEstadoPixel(EstadoPixel.VACIO);
-            nave.setPosicion(nave.getFila(), nave.getColumna() -1);
-            tablero[nave.getFila()][nave.getColumna()].setEstadoPixel(EstadoPixel.NAVE);
+            int nuevaFila = nave.getFila();
+            int nuevaCol = nave.getColumna()-1;
+
+            if(tablero[nuevaFila][nuevaCol].getEstadoPixel() == EstadoPixel.ENEMIGO){
+              detenerTimers();
+              estadoJuego.set("DERROTA");
+            }else{
+                tablero[nave.getFila()][nave.getColumna()].setEstadoPixel(EstadoPixel.VACIO);
+                nave.setPosicion(nave.getFila(), nave.getColumna() - 1);
+                tablero[nave.getFila()][nave.getColumna()].setEstadoPixel(EstadoPixel.NAVE);
+            }
         }
     }
 
     public void moverNaveDerecha(){
         if( nave != null && nave.getColumna()< COLUMNAS-1){
-            tablero[nave.getFila()][nave.getColumna()].setEstadoPixel(EstadoPixel.VACIO);
-            nave.setPosicion(nave.getFila(), nave.getColumna() +1);
-            tablero[nave.getFila()][nave.getColumna()].setEstadoPixel(EstadoPixel.NAVE);
+            int nuevaFila = nave.getFila();
+            int nuevaCol = nave.getColumna()+1;
+
+            if(tablero[nuevaFila][nuevaCol].getEstadoPixel() == EstadoPixel.ENEMIGO){
+                detenerTimers();
+                estadoJuego.set("DERROTA");
+            }else{
+                tablero[nave.getFila()][nave.getColumna()].setEstadoPixel(EstadoPixel.VACIO);
+                nave.setPosicion(nave.getFila(), nave.getColumna() + 1);
+                tablero[nave.getFila()][nave.getColumna()].setEstadoPixel(EstadoPixel.NAVE);
+            }
         }
     }
 
     public void moverNaveArriba() {
         if (nave != null && nave.getFila() > 0) {
-            tablero[nave.getFila()][nave.getColumna()].setEstadoPixel(EstadoPixel.VACIO);
-            nave.setPosicion(nave.getFila() - 1, nave.getColumna());
-            tablero[nave.getFila()][nave.getColumna()].setEstadoPixel(EstadoPixel.NAVE);
+            int nuevaFila = nave.getFila()-1;
+            int nuevaCol = nave.getColumna();
+
+            if(tablero[nuevaFila][nuevaCol].getEstadoPixel() == EstadoPixel.ENEMIGO){
+                detenerTimers();
+                estadoJuego.set("DERROTA");
+            }else {
+                tablero[nave.getFila()][nave.getColumna()].setEstadoPixel(EstadoPixel.VACIO);
+                nave.setPosicion(nave.getFila() - 1, nave.getColumna());
+                tablero[nave.getFila()][nave.getColumna()].setEstadoPixel(EstadoPixel.NAVE);
+            }
         }
     }
         public void moverNaveAbajo(){
             if( nave != null && nave.getFila()<FILAS-1){
-                tablero[nave.getFila()][nave.getColumna()].setEstadoPixel(EstadoPixel.VACIO);
-                nave.setPosicion(nave.getFila()+1, nave.getColumna());
-                tablero[nave.getFila()][nave.getColumna()].setEstadoPixel(EstadoPixel.NAVE);
+                int nuevaFila = nave.getFila();
+                int nuevaCol = nave.getColumna()+1;
+
+                if(tablero[nuevaFila][nuevaCol].getEstadoPixel() == EstadoPixel.ENEMIGO){
+                    detenerTimers();
+                    estadoJuego.set("DERROTA");
+                }else {
+                    tablero[nave.getFila()][nave.getColumna()].setEstadoPixel(EstadoPixel.VACIO);
+                    nave.setPosicion(nave.getFila() + 1, nave.getColumna());
+                    tablero[nave.getFila()][nave.getColumna()].setEstadoPixel(EstadoPixel.NAVE);
+                }
             }
     }
 
