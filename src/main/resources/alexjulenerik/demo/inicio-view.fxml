@@ -5,12 +5,11 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 
-
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="alexjulenerik.demo.controller.InicioController">
    <children>
-      <ImageView fitHeight="400.0" fitWidth="600.0" pickOnBounds="true">
+      <ImageView fitHeight="447.0" fitWidth="611.0" layoutX="-5.0" layoutY="-44.0" pickOnBounds="true">
          <image>
-            <Image url="@sprites/espacio.jpg" />
+            <Image url="@sprites/prueba.png" />
          </image>
       </ImageView>
       <ImageView fitHeight="193.0" fitWidth="447.0" layoutX="77.0" layoutY="73.0" pickOnBounds="true" preserveRatio="true">

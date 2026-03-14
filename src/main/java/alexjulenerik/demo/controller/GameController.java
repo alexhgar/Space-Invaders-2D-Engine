@@ -68,7 +68,7 @@ public class GameController implements Initializable { //Initializable se asegur
             case NAVE -> rect.setFill(Color.GREEN);
             case ENEMIGO -> rect.setFill(Color.RED);
             case DISPARO -> rect.setFill(Color.WHITE);
-            case VACIO -> rect.setFill(Color.BLACK);
+            case VACIO -> rect.setFill(Color.TRANSPARENT);
         }
     }
 
