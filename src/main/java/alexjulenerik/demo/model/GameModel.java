@@ -332,8 +332,8 @@ public class GameModel {
     }
         public void moverNaveAbajo(){
             if( nave != null && nave.getFila()<FILAS-1){
-                int nuevaFila = nave.getFila();
-                int nuevaCol = nave.getColumna()+1;
+                int nuevaFila = nave.getFila()+1;
+                int nuevaCol = nave.getColumna();
 
                 if(tablero[nuevaFila][nuevaCol].getEstadoPixel() == EstadoPixel.ENEMIGO){
                     detenerTimers();

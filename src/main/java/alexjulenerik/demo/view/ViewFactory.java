@@ -1,5 +1,6 @@
 package alexjulenerik.demo.view;
 import alexjulenerik.demo.GameApplication;
+import alexjulenerik.demo.controller.GameController;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
@@ -23,7 +24,7 @@ public class ViewFactory {
         //Cargar el gameview
         FXMLLoader fxmlLoader = new FXMLLoader(GameApplication.class.getResource("gameview.fxml"));
         //Tamaño 600x1000 ya que 60x100 se veria muy pequeño (mismas proporciones)
-        Scene scene = new Scene(fxmlLoader.load(),1100,600);
+        Scene scene = new Scene(fxmlLoader.load(),1040,623);
         //Crear el stage
         Stage stage = new Stage();
         stage.setTitle("Space Invaders");
