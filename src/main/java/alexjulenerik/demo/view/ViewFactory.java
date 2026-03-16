@@ -23,7 +23,7 @@ public class ViewFactory {
         //Cargar el gameview
         FXMLLoader fxmlLoader = new FXMLLoader(GameApplication.class.getResource("gameview.fxml"));
         //Tamaño 600x1000 ya que 60x100 se veria muy pequeño (mismas proporciones)
-        Scene scene = new Scene(fxmlLoader.load(),1000,600);
+        Scene scene = new Scene(fxmlLoader.load(),1100,600);
         //Crear el stage
         Stage stage = new Stage();
         stage.setTitle("Space Invaders");
