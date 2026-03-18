@@ -165,6 +165,7 @@ public class GameModel {
                         nuevaCol = COLUMNAS - 1;
                     }
                 }
+
                 boolean enemigoMuerto = false;
                 Iterator<Disparo> itDisparo = listaDisparos.iterator();
                 while (itDisparo.hasNext()) {
@@ -331,7 +332,7 @@ public class GameModel {
         }
     }
         public void moverNaveAbajo(){
-            if( nave != null && nave.getFila()<FILAS-1){
+            if( nave != null && nave.getFila()<FILAS-2){
                 int nuevaFila = nave.getFila()+1;
                 int nuevaCol = nave.getColumna();
 
