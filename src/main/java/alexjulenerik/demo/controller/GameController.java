@@ -19,8 +19,8 @@ import java.util.ResourceBundle;
 
 //ERIK
 public class GameController implements Initializable { //Initializable se asegura de que las variables fmxl no son nulas
-    @FXML
     //Enlazar los paneles de gameview.fxml
+    @FXML
     private GridPane pnlGame;
     @FXML
     private BorderPane pnlMain;
@@ -51,6 +51,7 @@ public class GameController implements Initializable { //Initializable se asegur
         });
     }
 
+    //Metodo para crear el Pixel. Este metodo no se puede hacer en la clase Pixel ya que rompería el MVC.
     private Node crearPixel(int fila, int columna){
         //Crea cada pixel individual
         Rectangle rectangulo = new Rectangle(10,10);
@@ -61,6 +62,7 @@ public class GameController implements Initializable { //Initializable se asegur
         return rectangulo;
     }
 
+    //Metodo para definir el color del Pixel. Este metodo no se puede hacer en la clase Pixel ya que rompería el MVC.
     private void setPixelColor(Rectangle rect, Pixel pixel){
         //Cambia el estado del pixel dependiendo de que actor se encuentra en él
         var estado = pixel.getEstadoPixel();
