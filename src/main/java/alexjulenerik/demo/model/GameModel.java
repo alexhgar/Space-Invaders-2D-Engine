@@ -186,8 +186,18 @@ public class GameModel {
             }
             if (enemigoMuerto == false) {
                 if (nuevaFila < FILAS) {
-                    if (tablero[nuevaFila][nuevaCol].getEstadoPixel() == EstadoPixel.ENEMIGO) {
-                        // Choca con un colega, cancelamos el movimiento
+                    boolean colision = false;
+
+                    //comprobamos la lista real de enemigos en lugar del dibujo del tablero
+                    for (Enemigo compañero : listaEnemigos) {
+                        if (compañero != e && compañero.getFila() == nuevaFila && compañero.getColumna() == nuevaCol) {
+                            colision = true;
+                            break;
+                        }
+                    }
+
+                    if (colision) {
+                        //choca con un colega, cancelamos movimiento
                         nuevaFila = e.getFila();
                         nuevaCol = e.getColumna();
                     }
