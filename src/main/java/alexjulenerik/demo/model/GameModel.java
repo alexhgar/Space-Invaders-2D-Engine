@@ -28,8 +28,8 @@ public class GameModel {
     private final List<Disparo> listaDisparos = new ArrayList<>();
 
     //Timers requeridos
-    private Timer timerEnemigos;
-    private Timer timerDisparos;
+    private Timer timerGeneral;
+    private int contadorTicks;
 
     private final SimpleStringProperty estadoJuego = new SimpleStringProperty("ACTIVO");
     
@@ -87,41 +87,35 @@ public class GameModel {
     }
 
     public void iniciarTimers(){
-        //Cancelamos timers previos
-        if(timerEnemigos != null){
-            timerEnemigos.cancel();
-        }
-        if(timerDisparos != null){
-            timerDisparos.cancel();
-        }
+        detenerTimers(); // Cancelamos el proceso previo si existe
 
-        timerEnemigos = new Timer();
-        timerDisparos = new Timer();
+        timerGeneral = new Timer();
+        contadorTicks = 0;
 
-        //Tareas timeadas a 200ms para enemigos y 50ms para disparos
-
-        timerEnemigos.scheduleAtFixedRate(new TimerTask() {
+        // Tarea programada a 50ms para gestionar disparos y enemigos en un solo hilo
+        timerGeneral.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                Platform.runLater(() -> moverEnemigos());
-            };
-    }, 0, 200);
+                Platform.runLater(() -> {
+                    // El movimiento de disparos ocurre en cada tic (50ms)
+                    moverDisparos();
 
-    timerDisparos.scheduleAtFixedRate(new TimerTask() {
-        @Override
-            public void run(){
-                Platform.runLater(() -> moverDisparos());
-                     
-            };
-    } ,0, 50);
+                    contadorTicks++;
+                    // Los enemigos se mueven cada 4 tics del timerGeneral (200ms)
+                    if (contadorTicks >= 4) {
+                        moverEnemigos();
+                        contadorTicks = 0;
+                    }
+                });
+            }
+        }, 0, 50);
     }
 
+
     private void detenerTimers() {
-        if (timerEnemigos != null){
-            timerEnemigos.cancel();
-        }
-        if (timerDisparos != null){
-            timerDisparos.cancel();
+        if (timerGeneral != null){
+            timerGeneral.cancel();
+            timerGeneral = null;
         }
     }
 
@@ -168,7 +162,7 @@ public class GameModel {
 
                 boolean enemigoMuerto = false;
                 Iterator<Disparo> itDisparo = listaDisparos.iterator();
-                while (itDisparo.hasNext()) {
+                while (itDisparo.hasNext() && !enemigoMuerto) {
                     Disparo d = itDisparo.next();
                     if (d.getFila() == nuevaFila && d.getColumna() == nuevaCol) {
                         itEnemigos.remove();
@@ -181,18 +175,19 @@ public class GameModel {
                         detenerTimers();
                         estadoJuego.set("VICTORIA");
                     }
-                    break;
+
                 }
             }
-            if (enemigoMuerto == false) {
+            if (!enemigoMuerto) {
                 if (nuevaFila < FILAS) {
                     boolean colision = false;
+                    Iterator<Enemigo> itCompañero = listaEnemigos.iterator();
 
                     //comprobamos la lista real de enemigos en lugar del dibujo del tablero
-                    for (Enemigo compañero : listaEnemigos) {
+                    while (itCompañero.hasNext() && !colision) {
+                        Enemigo compañero = itCompañero.next();
                         if (compañero != e && compañero.getFila() == nuevaFila && compañero.getColumna() == nuevaCol) {
-                            colision = true;
-                            break;
+                            colision = true; // Activa la bandera y sale del bucle
                         }
                     }
 
@@ -254,12 +249,13 @@ public class GameModel {
                     iterator.remove();
                     tablero[nuevaFila][col].setEstadoPixel(EstadoPixel.VACIO);
 
+                    boolean enemigoEncontrado = false;
                     Iterator<Enemigo> itEnemigo = listaEnemigos.iterator();
-                    while (itEnemigo.hasNext()) {
+                    while (itEnemigo.hasNext() && !enemigoEncontrado) {
                         Enemigo e = itEnemigo.next();
                         if (e.getFila() == nuevaFila && e.getColumna() == col) {
                             itEnemigo.remove();
-                            break;
+                            enemigoEncontrado = true;
                         }
                     }
 
