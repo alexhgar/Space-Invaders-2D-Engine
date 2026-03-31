@@ -1,25 +1,36 @@
 package alexjulenerik.demo.model;
+
+import java.util.ArrayList;
+import java.util.List;
+
 //JULEN
 public abstract class Actor {
-    private int fila;
-    private int columna;
+    private int filaCentral;
+    private int columnaCentral;
 
-    public Actor(int fila, int columna){
-        this.fila=fila;
-        this.columna=columna;
+    // Lista de desplazamientos relativos [deltaFila, deltaColumna] respecto al centro
+    protected List<int[]> forma;
+
+    public Actor(int filaCentral, int columnaCentral){
+        this.filaCentral = filaCentral;
+        this.columnaCentral = columnaCentral;
+        this.forma = new ArrayList<>();
     }
 
-    public int getFila(){
-        return fila;
+    public int getFilaCentral(){
+        return filaCentral;
     }
 
-    public int getColumna(){
-        return columna;
+    public int getColumnaCentral(){
+        return columnaCentral;
     }
 
-    public void setPosicion(int fila, int columna){
-        this.fila=fila;
-        this.columna=columna;
+    public void setPosicionCentral(int fila, int columna){
+        this.filaCentral = fila;
+        this.columnaCentral = columna;
     }
 
+    public List<int[]> getForma() {
+        return forma;
+    }
 }
