@@ -83,6 +83,7 @@ public class GameController implements Initializable { //Initializable se asegur
             case D -> modelo.moverNaveDerecha();
             case A -> modelo.moverNaveIzquierda();
             case SPACE -> modelo.disparar();
+            case M -> System.out.println("Notifica al sistema de cambiar el arma al detectar la tecla M") /*modelo.cambiarArma();*/;
         }
     }
 }

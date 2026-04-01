@@ -5,6 +5,7 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 
+<?import javafx.scene.layout.HBox?>
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="alexjulenerik.demo.controller.InicioController">
    <children>
       <ImageView fitHeight="447.0" fitWidth="611.0" layoutX="-5.0" layoutY="-44.0" pickOnBounds="true">
@@ -17,6 +18,16 @@
             <Image url="@sprites/logoInvasoresEspacio.png" />
          </image>
       </ImageView>
+
+      <HBox alignment="CENTER" layoutX="140.0" layoutY="265.0" prefHeight="40.0" prefWidth="300.0" spacing="20.0">
+         <children>
+            <Button fx:id="btnGreen" mnemonicParsing="false" onAction="#seleccionarGreen" text="GREEN" />
+            <Button fx:id="btnBlue" mnemonicParsing="false" onAction="#seleccionarBlue" text="BLUE" />
+            <Button fx:id="btnRed" mnemonicParsing="false" onAction="#seleccionarRed" text="RED" />
+         </children>
+      </HBox>
+
       <Button fx:id="btnJugar" layoutX="261.0" layoutY="312.0" onAction="#onJugarClick" prefHeight="21.0" prefWidth="78.0" style="-fx-font-size: 18px; -fx-cursor: hand;" text="JUGAR" />
    </children>
 </AnchorPane>
+
