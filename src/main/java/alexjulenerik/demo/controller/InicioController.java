@@ -79,6 +79,8 @@ public class InicioController implements Initializable {
     @FXML
     public void onJugarClick(ActionEvent event) {
         try {
+
+            modelo.setTipoNaveSeleccionada(tipoNaveElegida);
             // llama a viewfactory y carga la pantalla del juego
             ViewFactory.mostrarPantallaJuego();
 

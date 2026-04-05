@@ -64,10 +64,21 @@ public class GameController implements Initializable { //Initializable se asegur
 
     //Metodo para definir el color del Pixel. Este metodo no se puede hacer en la clase Pixel ya que rompería el MVC.
     private void setPixelColor(Rectangle rect, Pixel pixel){
-        //Cambia el estado del pixel dependiendo de que actor se encuentra en él
         var estado = pixel.getEstadoPixel();
         switch(estado){
-            case NAVE -> rect.setFill(Color.GREEN);
+            case NAVE -> {
+                // Leemos el tipo de nave para asignarle su color
+                String tipo = modelo.getTipoNaveSeleccionada();
+                if (tipo.equals("BLUE")) {
+                    rect.setFill(Color.BLUE);
+                } else {
+                    if (tipo.equals("RED")) {
+                        rect.setFill(Color.RED);
+                    } else {
+                        rect.setFill(Color.GREEN);
+                    }
+                }
+            }
             case ENEMIGO -> rect.setFill(Color.RED);
             case DISPARO -> rect.setFill(Color.WHITE);
             case VACIO -> rect.setFill(Color.TRANSPARENT);

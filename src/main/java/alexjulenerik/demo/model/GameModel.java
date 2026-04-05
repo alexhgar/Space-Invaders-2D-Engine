@@ -20,6 +20,7 @@ public class GameModel {
 
     private final Pixel[][] tablero;
     private Nave nave;
+    private String tipoNaveSeleccionada = "GREEN";
 
     private final List<Enemigo> listaEnemigos = new ArrayList<>();
     private final List<Disparo> listaDisparos = new ArrayList<>();
@@ -73,7 +74,8 @@ public class GameModel {
         listaDisparos.clear();
 
         // Usamos la factoría para crear la nave (por defecto GREEN para probar)
-        nave = NaveFactory.crearNave("GREEN", 55, 50);
+
+        nave = NaveFactory.crearNave(tipoNaveSeleccionada, 55, 50);
         dibujarActor(nave, EstadoPixel.NAVE);
 
         Random random = new Random();
@@ -440,6 +442,13 @@ public class GameModel {
                 }
             }
         }
+    }
+    public void setTipoNaveSeleccionada(String tipoNave) {
+        this.tipoNaveSeleccionada = tipoNave;
+    }
+
+    public String getTipoNaveSeleccionada() {
+        return this.tipoNaveSeleccionada;
     }
 
     public SimpleStringProperty estadoJuegoProperty() {
