@@ -76,6 +76,9 @@ public class GameModel {
         listaEnemigos.clear();
         listaDisparos.clear();
 
+        // Reseteamos el arma al disparo básico al empezar
+        estrategiaActual = new DisparoUnico();
+
         // Usamos la factoría para crear la nave (por defecto GREEN para probar)
 
         nave = NaveFactory.crearNave(tipoNaveSeleccionada, 55, 50);
@@ -178,21 +181,30 @@ public class GameModel {
                 boolean enemigoMuerto = false;
                 Iterator<Disparo> itDisparo = listaDisparos.iterator();
 
-                // ARREGLO 1: Condición integrada en el while
+                // ARREGLO 1: Seguro anti-doble borrado
                 while (itDisparo.hasNext() && enemigoMuerto == false) {
                     Disparo d = itDisparo.next();
                     for (int[] delta : e.getForma()) {
                         int fReal = nuevaFila + delta[0];
                         int cReal = nuevaCol + delta[1];
-                        if (d.getFilaCentral() == fReal) {
-                            if (d.getColumnaCentral() == cReal) {
-                                itEnemigos.remove();
-                                itDisparo.remove();
-                                tablero[d.getFilaCentral()][d.getColumnaCentral()].setEstadoPixel(EstadoPixel.VACIO);
-                                enemigoMuerto = true;
-                                if (listaEnemigos.isEmpty()) {
-                                    detenerTimers();
-                                    estadoJuego.set("VICTORIA");
+
+                        for (int[] deltaDisp : d.getForma()) {
+                            int fDisp = d.getFilaCentral() + deltaDisp[0];
+                            int cDisp = d.getColumnaCentral() + deltaDisp[1];
+
+                            if (fDisp == fReal) {
+                                if (cDisp == cReal) {
+                                    // Comprobamos que no lo hayamos borrado ya en este mismo chequeo
+                                    if (enemigoMuerto == false) {
+                                        itEnemigos.remove();
+                                        itDisparo.remove();
+                                        dibujarActor(d, EstadoPixel.VACIO);
+                                        enemigoMuerto = true;
+                                        if (listaEnemigos.isEmpty()) {
+                                            detenerTimers();
+                                            estadoJuego.set("VICTORIA");
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -259,36 +271,62 @@ public class GameModel {
         while (iterator.hasNext()) {
             Disparo d = iterator.next();
 
-            if (d.getFilaCentral() >= 0) {
-                if (d.getFilaCentral() < FILAS) {
-                    tablero[d.getFilaCentral()][d.getColumnaCentral()].setEstadoPixel(EstadoPixel.VACIO);
-                }
-            }
+            // 1. Borramos la forma entera antigua
+            dibujarActor(d, EstadoPixel.VACIO);
 
             int nuevaFila = d.getFilaCentral() - 1;
             int col = d.getColumnaCentral();
 
-            if (nuevaFila < 0) {
+            // Comprobamos si la nueva posición entera se sale por arriba
+            boolean salePorArriba = false;
+            for (int[] delta : d.getForma()) {
+                if (nuevaFila + delta[0] < 0) {
+                    salePorArriba = true;
+                }
+            }
+
+            if (salePorArriba == true) {
                 iterator.remove();
             } else {
-                if (tablero[nuevaFila][col].getEstadoPixel() == EstadoPixel.ENEMIGO) {
+                boolean impacto = false;
+                for (int[] delta : d.getForma()) {
+                    int fReal = nuevaFila + delta[0];
+                    int cReal = col + delta[1];
+                    if (fReal < FILAS) {
+                        if (tablero[fReal][cReal].getEstadoPixel() == EstadoPixel.ENEMIGO) {
+                            impacto = true;
+                        }
+                    }
+                }
+
+                if (impacto == true) {
                     iterator.remove();
-                    tablero[nuevaFila][col].setEstadoPixel(EstadoPixel.VACIO);
 
                     boolean enemigoEncontrado = false;
                     Iterator<Enemigo> itEnemigo = listaEnemigos.iterator();
 
-                    // ARREGLO 2: Condición integrada en el while
+                    // ARREGLO 2: Seguro anti-doble borrado
                     while (itEnemigo.hasNext() && enemigoEncontrado == false) {
                         Enemigo e = itEnemigo.next();
-                        for (int[] delta : e.getForma()) {
-                            int fE = e.getFilaCentral() + delta[0];
-                            int cE = e.getColumnaCentral() + delta[1];
-                            if (fE == nuevaFila) {
-                                if (cE == col) {
-                                    dibujarActor(e, EstadoPixel.VACIO);
-                                    itEnemigo.remove();
-                                    enemigoEncontrado = true;
+
+                        // ¿Algún pixel del disparo choca con algún pixel del enemigo?
+                        for (int[] deltaDisp : d.getForma()) {
+                            int fDisp = nuevaFila + deltaDisp[0];
+                            int cDisp = col + deltaDisp[1];
+
+                            for (int[] deltaEne : e.getForma()) {
+                                int fEne = e.getFilaCentral() + deltaEne[0];
+                                int cEne = e.getColumnaCentral() + deltaEne[1];
+
+                                if (fDisp == fEne) {
+                                    if (cDisp == cEne) {
+                                        // Comprobamos que no lo hayamos borrado ya en este mismo chequeo
+                                        if (enemigoEncontrado == false) {
+                                            dibujarActor(e, EstadoPixel.VACIO);
+                                            itEnemigo.remove();
+                                            enemigoEncontrado = true;
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -300,7 +338,7 @@ public class GameModel {
                     }
                 } else {
                     d.setPosicionCentral(nuevaFila, col);
-                    tablero[nuevaFila][col].setEstadoPixel(EstadoPixel.DISPARO);
+                    dibujarActor(d, EstadoPixel.DISPARO);
                 }
             }
         }
@@ -445,11 +483,63 @@ public class GameModel {
         return estadoJuego;
     }
 
-    public void disparar(){
-        //Delegamos creacion del objeto Disparo a la estrategia actual
-        //Disparo aparece par de filas por encima de nave
-        if(nave != null){
-            estrategiaActual.realizarDisparo(nave.getFilaCentral() -2, nave.getColumnaCentral(), listaDisparos);
+    public void disparar() {
+        if (nave != null) {
+            // 1. Buscamos cuál es el píxel más alto de la nave actual (el delta negativo más grande)
+            int minDeltaNave = 0;
+            for (int[] delta : nave.getForma()) {
+                if (delta[0] < minDeltaNave) {
+                    minDeltaNave = delta[0];
+                }
+            }
+
+            // 2. Calculamos la fila real más alta de la nave en el tablero
+            int filaMasAltaNave = nave.getFilaCentral() + minDeltaNave;
+
+            // 3. El disparo debe apoyar su parte MÁS BAJA justo 1 píxel por encima del techo de la nave
+            int filaFondoDisparo = filaMasAltaNave - 1;
+
+            if (filaFondoDisparo >= 0) {
+                estrategiaActual.realizarDisparo(filaFondoDisparo, nave.getColumnaCentral(), listaDisparos);
+
+                if (listaDisparos.isEmpty() == false) {
+                    Disparo nuevoDisparo = listaDisparos.get(listaDisparos.size() - 1);
+                    dibujarActor(nuevoDisparo, EstadoPixel.DISPARO);
+                }
+            }
+        }
+    }
+
+    public void cambiarArma() {
+        if (tipoNaveSeleccionada.equals("GREEN")) {
+            // GREEN solo alterna entre Único y Flecha
+            if (estrategiaActual instanceof DisparoUnico) {
+                estrategiaActual = new DisparoFlecha();
+            } else {
+                estrategiaActual = new DisparoUnico();
+            }
+        } else {
+            if (tipoNaveSeleccionada.equals("BLUE")) {
+                // BLUE solo alterna entre Único y Rombo
+                if (estrategiaActual instanceof DisparoUnico) {
+                    estrategiaActual = new DisparoRombo();
+                } else {
+                    estrategiaActual = new DisparoUnico();
+                }
+            } else {
+                if (tipoNaveSeleccionada.equals("RED")) {
+                    // RED rota entre los tres: Único -> Flecha -> Rombo -> Único...
+                    if (estrategiaActual instanceof DisparoUnico) {
+                        estrategiaActual = new DisparoFlecha();
+                    } else {
+                        if (estrategiaActual instanceof DisparoFlecha) {
+                            estrategiaActual = new DisparoRombo();
+                        } else {
+                            estrategiaActual = new DisparoUnico();
+                        }
+                    }
+                }
+            }
         }
     }
 }
