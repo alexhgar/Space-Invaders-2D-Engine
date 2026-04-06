@@ -30,6 +30,8 @@ public class GameModel {
 
     private final SimpleStringProperty estadoJuego = new SimpleStringProperty("ACTIVO");
 
+    private EstrategiaDisparo estrategiaActual;
+
     private GameModel() {
         tablero = new Pixel[FILAS][COLUMNAS];
         for (int f = 0; f < FILAS; f++) {
@@ -37,6 +39,7 @@ public class GameModel {
                 tablero[f][c] = new Pixel(f, c);
             }
         }
+        this.estrategiaActual = new DisparoUnico();
     }
 
     public static GameModel getInstance() {
@@ -303,19 +306,6 @@ public class GameModel {
         }
     }
 
-    public void disparar() {
-        if (nave != null) {
-            int filaDisparo = nave.getFilaCentral() - 2;
-            if (filaDisparo >= 0) {
-                // Ahora el disparo nace en la fila - 2, justo encima de la punta de la nave
-                Disparo nuevoDisparo = new Disparo(nave.getFilaCentral() - 2, nave.getColumnaCentral());
-                nuevoDisparo.getForma().add(new int[]{0, 0}); // Aseguramos que el disparo tenga forma de 1 píxel
-                listaDisparos.add(nuevoDisparo);
-                dibujarActor(nuevoDisparo, EstadoPixel.DISPARO);
-            }
-        }
-    }
-
     public Pixel getPixel(int f, int c) {
         return tablero[f][c];
     }
@@ -453,5 +443,13 @@ public class GameModel {
 
     public SimpleStringProperty estadoJuegoProperty() {
         return estadoJuego;
+    }
+
+    public void disparar(){
+        //Delegamos creacion del objeto Disparo a la estrategia actual
+        //Disparo aparece par de filas por encima de nave
+        if(nave != null){
+            estrategiaActual.realizarDisparo(nave.getFilaCentral() -2, nave.getColumnaCentral(), listaDisparos);
+        }
     }
 }
