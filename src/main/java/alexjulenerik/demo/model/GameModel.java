@@ -568,23 +568,4 @@ public class GameModel {
             }
         }
     }
-
-    private boolean areaDespejada(int filaCentro, int colCentro){
-        int margenH =4;
-        int margenV =2;
-
-        for (int f= filaCentro - margenV; f<= filaCentro + margenV; f++){
-            for(int c= colCentro - margenH; c <= colCentro + margenH; c++){
-                if(f>= FILAS && f < 0 && c>= COLUMNAS && c < 0){
-                    return false;
-                }
-
-                if(tablero[f][c].getEstadoPixel() == EstadoPixel.ENEMIGO){
-                        return false;
-                }
-            }
-        }
-
-        return true;
-    }
 }
