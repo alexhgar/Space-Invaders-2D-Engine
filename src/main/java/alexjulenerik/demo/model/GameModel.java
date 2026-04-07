@@ -66,7 +66,9 @@ public class GameModel {
     }
 
     public void inicializarPartida() {
+
         estadoJuego.set("ACTIVO");
+        
         for (int f = 0; f < FILAS; f++) {
             for (int c = 0; c < COLUMNAS; c++) {
                 tablero[f][c].setEstadoPixel(EstadoPixel.VACIO);
@@ -90,22 +92,46 @@ public class GameModel {
         for (int i = 0; i < numEnemigos; i++) {
             int colRandom;
             boolean posicionValida = false;
-            do {
-                colRandom = random.nextInt(COLUMNAS - 4) + 2;
-                posicionValida = true;
-                if (tablero[5][colRandom].getEstadoPixel() == EstadoPixel.ENEMIGO) {
-                    posicionValida = false;
-                }
-            } while (posicionValida == false);
+            int intentos = 0;
 
-            // Usamos la factoría para crear el enemigo
+            do {
+                colRandom = random.nextInt(COLUMNAS - 10) + 5;
+                posicionValida = true;
+
+                int f=4;
+                while (f<= 6 && posicionValida){
+                    int c = colRandom -3;
+                    while (c <= colRandom + 3 && posicionValida){
+                        if(tablero[f][c].getEstadoPixel() == EstadoPixel.ENEMIGO){
+                            posicionValida = false;
+                        }
+                        c++;
+                    }
+                    f++;
+                }
+            
+                intentos ++;
+
+                if (intentos > 100){
+                    posicionValida = true;
+                }
+        } while (posicionValida == false && intentos <= 100);
+
+        if(intentos <= 100){
             Enemigo enemigo = EnemigoFactory.crearEnemigo("BASICO", 5, colRandom);
             listaEnemigos.add(enemigo);
             dibujarActor(enemigo, EstadoPixel.ENEMIGO);
         }
+        }
 
         iniciarTimers();
     }
+    
+                
+            
+
+        
+    
 
     public void iniciarTimers() {
         detenerTimers();
@@ -541,5 +567,24 @@ public class GameModel {
                 }
             }
         }
+    }
+
+    private boolean areaDespejada(int filaCentro, int colCentro){
+        int margenH =4;
+        int margenV =2;
+
+        for (int f= filaCentro - margenV; f<= filaCentro + margenV; f++){
+            for(int c= colCentro - margenH; c <= colCentro + margenH; c++){
+                if(f>= FILAS && f < 0 && c>= COLUMNAS && c < 0){
+                    return false;
+                }
+
+                if(tablero[f][c].getEstadoPixel() == EstadoPixel.ENEMIGO){
+                        return false;
+                }
+            }
+        }
+
+        return true;
     }
 }
