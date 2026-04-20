@@ -28,6 +28,9 @@ public class GameModel {
     private Timer timerGeneral;
     private int contadorTicks;
 
+    private long ultimoDisparo = 0;
+    private static final long COOLDOWN_DISPARO = 400;
+
     private final SimpleStringProperty estadoJuego = new SimpleStringProperty("ACTIVO");
 
     private EstrategiaDisparo estrategiaActual;
@@ -510,6 +513,12 @@ public class GameModel {
 
     public void disparar() {
         if (nave != null) {
+            //cooldown de disparo añadido para evitar spammear
+            long ahora = System.currentTimeMillis();
+            if (ahora - ultimoDisparo < COOLDOWN_DISPARO){
+                return;
+            }
+
             // Buscamos el píxel mas alto de la nave actual
             int minDeltaNave = 0;
             for (int[] delta : nave.getForma()) {
@@ -530,6 +539,8 @@ public class GameModel {
                 if (listaDisparos.isEmpty() == false) {
                     Disparo nuevoDisparo = listaDisparos.get(listaDisparos.size() - 1);
                     dibujarActor(nuevoDisparo, EstadoPixel.DISPARO);
+
+                    ultimoDisparo = ahora;
                 }
             }
         }
