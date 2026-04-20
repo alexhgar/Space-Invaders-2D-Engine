@@ -8,27 +8,27 @@ public class DisparoRombo implements EstrategiaDisparo{
         // Restamos 2 a la fila de fondo para saber dónde colocar el centro del objeto.
         Disparo d = new Disparo(filaFondo - 2, col);
 
-        // Primera fila (nada, nada, punto, nada, nada)
+        // Primera fila
         d.getForma().add(new int[]{-2, 0});
 
-        // Segunda fila (nada, punto, punto, punto, nada)
+        // Segunda fila
         d.getForma().add(new int[]{-1, -1});
         d.getForma().add(new int[]{-1, 0});
         d.getForma().add(new int[]{-1, 1});
 
-        // Tercera fila - CENTRO (punto, punto, punto, punto, punto)
+        // Tercera fila
         d.getForma().add(new int[]{0, -2});
         d.getForma().add(new int[]{0, -1});
         d.getForma().add(new int[]{0, 0});
         d.getForma().add(new int[]{0, 1});
         d.getForma().add(new int[]{0, 2});
 
-        // Cuarta fila (nada, punto, punto, punto, nada)
+        // Cuarta fila
         d.getForma().add(new int[]{1, -1});
         d.getForma().add(new int[]{1, 0});
         d.getForma().add(new int[]{1, 1});
 
-        // Quinta fila - FONDO (nada, nada, punto, nada, nada)
+        // Quinta fila
         d.getForma().add(new int[]{2, 0});
 
         listaDisparos.add(d);

@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.ArrayList;
 import javafx.beans.property.SimpleStringProperty;
 
-//ALEX (Adaptado para HU7 y HU9 - Bug de congelación arreglado)
+//ALEX
 public class GameModel {
 
     private static final GameModel instance = new GameModel();
@@ -46,7 +46,7 @@ public class GameModel {
         return instance;
     }
 
-    // NUEVO MÉTODO AUXILIAR: Dibuja o borra un actor completo leyendo su lista de forma
+    // Dibuja o borra un actor completo leyendo su lista de forma
     private void dibujarActor(Actor actor, EstadoPixel estado) {
         if (actor != null) {
             for (int[] delta : actor.getForma()) {
@@ -207,7 +207,7 @@ public class GameModel {
                 boolean enemigoMuerto = false;
                 Iterator<Disparo> itDisparo = listaDisparos.iterator();
 
-                // ARREGLO 1: Seguro anti-doble borrado
+                // Seguro anti-doble borrado
                 while (itDisparo.hasNext() && enemigoMuerto == false) {
                     Disparo d = itDisparo.next();
                     for (int[] delta : e.getForma()) {
@@ -297,7 +297,6 @@ public class GameModel {
         while (iterator.hasNext()) {
             Disparo d = iterator.next();
 
-            // 1. Borramos la forma entera antigua
             dibujarActor(d, EstadoPixel.VACIO);
 
             int nuevaFila = d.getFilaCentral() - 1;
@@ -331,11 +330,11 @@ public class GameModel {
                     boolean enemigoEncontrado = false;
                     Iterator<Enemigo> itEnemigo = listaEnemigos.iterator();
 
-                    // ARREGLO 2: Seguro anti-doble borrado
+                    // Seguro anti-doble borrado
                     while (itEnemigo.hasNext() && enemigoEncontrado == false) {
                         Enemigo e = itEnemigo.next();
 
-                        // ¿Algún pixel del disparo choca con algún pixel del enemigo?
+                        // Algun pixel del disparo choca con algún pixel del enemigo?
                         for (int[] deltaDisp : d.getForma()) {
                             int fDisp = nuevaFila + deltaDisp[0];
                             int cDisp = col + deltaDisp[1];
@@ -511,7 +510,7 @@ public class GameModel {
 
     public void disparar() {
         if (nave != null) {
-            // 1. Buscamos cuál es el píxel más alto de la nave actual (el delta negativo más grande)
+            // Buscamos el píxel mas alto de la nave actual
             int minDeltaNave = 0;
             for (int[] delta : nave.getForma()) {
                 if (delta[0] < minDeltaNave) {
@@ -519,10 +518,10 @@ public class GameModel {
                 }
             }
 
-            // 2. Calculamos la fila real más alta de la nave en el tablero
+            // calculamos la fila real más alta de la nave en el tablero
             int filaMasAltaNave = nave.getFilaCentral() + minDeltaNave;
 
-            // 3. El disparo debe apoyar su parte MÁS BAJA justo 1 píxel por encima del techo de la nave
+            // el disparo debe apoyar su parte MAS BAJA justo 1 píxel por encima del techo de la nave
             int filaFondoDisparo = filaMasAltaNave - 1;
 
             if (filaFondoDisparo >= 0) {
@@ -538,7 +537,7 @@ public class GameModel {
 
     public void cambiarArma() {
         if (tipoNaveSeleccionada.equals("GREEN")) {
-            // GREEN solo alterna entre Único y Flecha
+            // GREEN solo alterna entre Unico y Flecha
             if (estrategiaActual instanceof DisparoUnico) {
                 estrategiaActual = new DisparoFlecha();
             } else {
@@ -546,7 +545,7 @@ public class GameModel {
             }
         } else {
             if (tipoNaveSeleccionada.equals("BLUE")) {
-                // BLUE solo alterna entre Único y Rombo
+                // BLUE solo alterna entre Unico y Rombo
                 if (estrategiaActual instanceof DisparoUnico) {
                     estrategiaActual = new DisparoRombo();
                 } else {
@@ -554,7 +553,7 @@ public class GameModel {
                 }
             } else {
                 if (tipoNaveSeleccionada.equals("RED")) {
-                    // RED rota entre los tres: Único -> Flecha -> Rombo -> Único...
+                    // RED rota entre los tres: Unico -> Flecha -> Rombo -> Unico...
                     if (estrategiaActual instanceof DisparoUnico) {
                         estrategiaActual = new DisparoFlecha();
                     } else {

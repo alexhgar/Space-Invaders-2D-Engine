@@ -8,29 +8,28 @@ public class NaveFactory {
 
         if (tipoNave.equals("GREEN")) {
             // Forma de T invertida (4 píxeles)
-            nuevaNave.getForma().add(new int[]{0, 0});   // Centro
-            nuevaNave.getForma().add(new int[]{0, -1});  // Izquierda
-            nuevaNave.getForma().add(new int[]{0, 1});   // Derecha
-            nuevaNave.getForma().add(new int[]{-1, 0});  // Arriba (punta)
+            nuevaNave.getForma().add(new int[]{0, 0});
+            nuevaNave.getForma().add(new int[]{0, -1});
+            nuevaNave.getForma().add(new int[]{0, 1});
+            nuevaNave.getForma().add(new int[]{-1, 0});
         } else {
             if (tipoNave.equals("BLUE")) {
                 // Forma de U (5 píxeles)
-                nuevaNave.getForma().add(new int[]{0, 0});   // Centro (base)
-                nuevaNave.getForma().add(new int[]{0, -1});  // Base izquierda
-                nuevaNave.getForma().add(new int[]{0, 1});   // Base derecha
-                nuevaNave.getForma().add(new int[]{-1, -1}); // Cuerno izquierdo
-                nuevaNave.getForma().add(new int[]{-1, 1});  // Cuerno derecho
+                nuevaNave.getForma().add(new int[]{0, 0});
+                nuevaNave.getForma().add(new int[]{0, -1});
+                nuevaNave.getForma().add(new int[]{0, 1});
+                nuevaNave.getForma().add(new int[]{-1, -1});
+                nuevaNave.getForma().add(new int[]{-1, 1});
             } else {
                 if (tipoNave.equals("RED")) {
                     // Forma de bloque ancho (6 píxeles)
-                    nuevaNave.getForma().add(new int[]{0, 0});   // Centro
-                    nuevaNave.getForma().add(new int[]{0, -1});  // Izquierda
-                    nuevaNave.getForma().add(new int[]{0, 1});   // Derecha
-                    nuevaNave.getForma().add(new int[]{-1, 0});  // Arriba centro
-                    nuevaNave.getForma().add(new int[]{-1, -1}); // Arriba izquierda
-                    nuevaNave.getForma().add(new int[]{-1, 1});  // Arriba derecha
+                    nuevaNave.getForma().add(new int[]{0, 0});
+                    nuevaNave.getForma().add(new int[]{0, -1});
+                    nuevaNave.getForma().add(new int[]{0, 1});
+                    nuevaNave.getForma().add(new int[]{-1, 0});
+                    nuevaNave.getForma().add(new int[]{-1, -1});
+                    nuevaNave.getForma().add(new int[]{-1, 1});
                 } else {
-                    // Por si hay algún fallo, devolvemos un píxel simple
                     nuevaNave.getForma().add(new int[]{0, 0});
                 }
             }
