@@ -1,8 +1,8 @@
 package alexjulenerik.demo.model;
 
+import alexjulenerik.demo.model.estados.*;
 import javafx.application.Platform;
 
-import java.util.Iterator;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.ArrayList;
 import javafx.beans.property.SimpleStringProperty;
 
-//ALEX
 public class GameModel {
 
     private static final GameModel instance = new GameModel();
@@ -31,6 +30,7 @@ public class GameModel {
     private long ultimoDisparo = 0;
     private static final long COOLDOWN_DISPARO = 400;
 
+    private EstadoJuego estadoActualObj;
     private final SimpleStringProperty estadoJuego = new SimpleStringProperty("ACTIVO");
 
     private EstrategiaDisparo estrategiaActual;
@@ -43,13 +43,18 @@ public class GameModel {
             }
         }
         this.estrategiaActual = new DisparoUnico();
+        this.estadoActualObj = new EstadoActivo();
     }
 
     public static GameModel getInstance() {
         return instance;
     }
 
-    // Dibuja o borra un actor completo leyendo su lista de forma
+    public void cambiarEstado(EstadoJuego nuevoEstado) {
+        this.estadoActualObj = nuevoEstado;
+        this.estadoJuego.set(nuevoEstado.getNombre());
+    }
+
     private void dibujarActor(Actor actor, EstadoPixel estado) {
         if (actor != null) {
             for (int[] delta : actor.getForma()) {
@@ -69,9 +74,8 @@ public class GameModel {
     }
 
     public void inicializarPartida() {
+        cambiarEstado(new EstadoActivo());
 
-        estadoJuego.set("ACTIVO");
-        
         for (int f = 0; f < FILAS; f++) {
             for (int c = 0; c < COLUMNAS; c++) {
                 tablero[f][c].setEstadoPixel(EstadoPixel.VACIO);
@@ -80,11 +84,7 @@ public class GameModel {
 
         listaEnemigos.clear();
         listaDisparos.clear();
-
-        // Reseteamos el arma al disparo básico al empezar
         estrategiaActual = new DisparoUnico();
-
-        // Usamos la factoría para crear la nave (por defecto GREEN para probar)
 
         nave = NaveFactory.crearNave(tipoNaveSeleccionada, 55, 50);
         dibujarActor(nave, EstadoPixel.NAVE);
@@ -94,51 +94,46 @@ public class GameModel {
 
         for (int i = 0; i < numEnemigos; i++) {
             int colRandom;
-            boolean posicionValida = false;
+            boolean posicionValida;
             int intentos = 0;
 
             do {
                 colRandom = random.nextInt(COLUMNAS - 10) + 5;
-                posicionValida = true;
+                int cTemp = colRandom; // Necesario para la lambda
 
-                int f=4;
-                while (f<= 6 && posicionValida){
-                    int c = colRandom -3;
-                    while (c <= colRandom + 3 && posicionValida){
-                        if(tablero[f][c].getEstadoPixel() == EstadoPixel.ENEMIGO){
-                            posicionValida = false;
-                        }
-                        c++;
+                // HU10: Comprobación de distancia de enemigos con Streams
+                boolean cerca = listaEnemigos.stream().anyMatch(e -> {
+                    if (Math.abs(e.getColumnaCentral() - cTemp) <= 3) {
+                        return true;
+                    } else {
+                        return false;
                     }
-                    f++;
-                }
-            
-                intentos ++;
+                });
 
-                if (intentos > 100){
+                if (cerca == true) {
+                    posicionValida = false;
+                } else {
                     posicionValida = true;
                 }
-        } while (posicionValida == false && intentos <= 100);
 
-        if(intentos <= 100){
-            Enemigo enemigo = EnemigoFactory.crearEnemigo("BASICO", 5, colRandom);
-            listaEnemigos.add(enemigo);
-            dibujarActor(enemigo, EstadoPixel.ENEMIGO);
-        }
+                intentos++;
+                if (intentos > 100) {
+                    posicionValida = true;
+                }
+            } while (posicionValida == false && intentos <= 100);
+
+            if (intentos <= 100) {
+                Enemigo enemigo = EnemigoFactory.crearEnemigo("BASICO", 5, colRandom);
+                listaEnemigos.add(enemigo);
+                dibujarActor(enemigo, EstadoPixel.ENEMIGO);
+            }
         }
 
         iniciarTimers();
     }
-    
-                
-            
-
-        
-    
 
     public void iniciarTimers() {
         detenerTimers();
-
         timerGeneral = new Timer();
         contadorTicks = 0;
 
@@ -146,12 +141,8 @@ public class GameModel {
             @Override
             public void run() {
                 Platform.runLater(() -> {
-                    moverDisparos();
-                    contadorTicks++;
-                    if (contadorTicks >= 4) {
-                        moverEnemigos();
-                        contadorTicks = 0;
-                    }
+                    // PATRÓN STATE: Llamamos al estado para que decida qué hacer
+                    estadoActualObj.actualizarLogica(GameModel.getInstance());
                 });
             }
         }, 0, 50);
@@ -164,22 +155,67 @@ public class GameModel {
         }
     }
 
-    private void moverEnemigos() {
-        if (listaEnemigos.isEmpty() == false) {
+
+
+    private boolean chocan(Actor a1, Actor a2) {
+        return a1.getForma().stream().anyMatch(delta1 -> {
+            int f1 = a1.getFilaCentral() + delta1[0];
+            int c1 = a1.getColumnaCentral() + delta1[1];
+            return a2.getForma().stream().anyMatch(delta2 -> {
+                int f2 = a2.getFilaCentral() + delta2[0];
+                int c2 = a2.getColumnaCentral() + delta2[1];
+                if (f1 == f2) {
+                    if (c1 == c2) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                } else {
+                    return false;
+                }
+            });
+        });
+    }
+
+    private boolean tocaFondoONave(Enemigo e) {
+        return e.getForma().stream().anyMatch(delta -> {
+            int fReal = e.getFilaCentral() + delta[0];
+            if (fReal >= FILAS - 1) {
+                return true;
+            } else {
+                if (chocan(e, nave)) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        });
+    }
+
+
+    public void logicaJuegoActivo() {
+        // 1. Borrar dibujos antiguos
+        listaDisparos.forEach(d -> dibujarActor(d, EstadoPixel.VACIO));
+        listaEnemigos.forEach(e -> dibujarActor(e, EstadoPixel.VACIO));
+
+        // 2. Mover disparos y limpiar los que salen del tablero
+        listaDisparos.forEach(d -> d.setPosicionCentral(d.getFilaCentral() - 1, d.getColumnaCentral()));
+        listaDisparos.removeIf(d -> d.getForma().stream().anyMatch(delta -> {
+            if (d.getFilaCentral() + delta[0] < 0) {
+                return true;
+            } else {
+                return false;
+            }
+        }));
+
+        // 3. Mover enemigos
+        contadorTicks++;
+        if (contadorTicks >= 4) {
             Random random = new Random();
-            boolean finPorDerrota = false;
-
-            Iterator<Enemigo> itEnemigos = listaEnemigos.iterator();
-
-            while (itEnemigos.hasNext()) {
-                Enemigo e = itEnemigos.next();
-
-                // Borramos solo el enemigo actual usando su forma
-                dibujarActor(e, EstadoPixel.VACIO);
-
+            listaEnemigos.forEach(e -> {
                 int direccion = random.nextInt(3);
-                int nuevaFila = e.getFilaCentral();
                 int nuevaCol = e.getColumnaCentral();
+                int nuevaFila = e.getFilaCentral();
 
                 if (direccion == 0) {
                     nuevaCol = nuevaCol - 1;
@@ -191,183 +227,82 @@ public class GameModel {
                     }
                 }
 
-                boolean limiteSuperado = false;
-                for (int[] delta : e.getForma()) {
-                    int colReal = nuevaCol + delta[1];
-                    if (colReal < 0) {
-                        limiteSuperado = true;
+                int colCheck = nuevaCol;
+                boolean seSale = e.getForma().stream().anyMatch(delta -> {
+                    if (colCheck + delta[1] < 0) {
+                        return true;
                     } else {
-                        if (colReal >= COLUMNAS) {
-                            limiteSuperado = true;
+                        if (colCheck + delta[1] >= COLUMNAS) {
+                            return true;
+                        } else {
+                            return false;
                         }
                     }
-                }
+                });
 
-                if (limiteSuperado == true) {
+                if (seSale == true) {
                     nuevaCol = e.getColumnaCentral();
                 }
 
-                boolean enemigoMuerto = false;
-                Iterator<Disparo> itDisparo = listaDisparos.iterator();
-
-                // Seguro anti-doble borrado
-                while (itDisparo.hasNext() && enemigoMuerto == false) {
-                    Disparo d = itDisparo.next();
-                    for (int[] delta : e.getForma()) {
-                        int fReal = nuevaFila + delta[0];
-                        int cReal = nuevaCol + delta[1];
-
-                        for (int[] deltaDisp : d.getForma()) {
-                            int fDisp = d.getFilaCentral() + deltaDisp[0];
-                            int cDisp = d.getColumnaCentral() + deltaDisp[1];
-
-                            if (fDisp == fReal) {
-                                if (cDisp == cReal) {
-                                    // Comprobamos que no lo hayamos borrado ya en este mismo chequeo
-                                    if (enemigoMuerto == false) {
-                                        itEnemigos.remove();
-                                        itDisparo.remove();
-                                        dibujarActor(d, EstadoPixel.VACIO);
-                                        enemigoMuerto = true;
-                                        if (listaEnemigos.isEmpty()) {
-                                            detenerTimers();
-                                            estadoJuego.set("VICTORIA");
-                                        }
+                int fCheck = nuevaFila;
+                int cCheck = nuevaCol;
+                boolean chocaCompi = listaEnemigos.stream().anyMatch(otro -> {
+                    if (e != otro) {
+                        return otro.getForma().stream().anyMatch(deltaOtro -> {
+                            int fO = otro.getFilaCentral() + deltaOtro[0];
+                            int cO = otro.getColumnaCentral() + deltaOtro[1];
+                            return e.getForma().stream().anyMatch(deltaE -> {
+                                int fE = fCheck + deltaE[0];
+                                int cE = cCheck + deltaE[1];
+                                if (fE == fO) {
+                                    if (cE == cO) {
+                                        return true;
+                                    } else {
+                                        return false;
                                     }
+                                } else {
+                                    return false;
                                 }
-                            }
-                        }
-                    }
-                }
-
-                if (enemigoMuerto == false) {
-                    boolean colision = false;
-                    for (int[] delta : e.getForma()) {
-                        int fReal = nuevaFila + delta[0];
-                        int cReal = nuevaCol + delta[1];
-                        if (fReal < FILAS) {
-                            if (tablero[fReal][cReal].getEstadoPixel() == EstadoPixel.ENEMIGO) {
-                                colision = true;
-                            }
-                        }
-                    }
-
-                    if (colision == true) {
-                        nuevaFila = e.getFilaCentral();
-                        nuevaCol = e.getColumnaCentral();
-                    }
-
-                    boolean tocaFondo = false;
-                    boolean tocaNave = false;
-                    for (int[] delta : e.getForma()) {
-                        int fReal = nuevaFila + delta[0];
-                        int cReal = nuevaCol + delta[1];
-                        if (fReal >= FILAS - 1) {
-                            tocaFondo = true;
-                        } else {
-                            if (tablero[fReal][cReal].getEstadoPixel() == EstadoPixel.NAVE) {
-                                tocaNave = true;
-                            }
-                        }
-                    }
-
-                    if (tocaFondo == true) {
-                        finPorDerrota = true;
-                        e.setPosicionCentral(nuevaFila, nuevaCol);
+                            });
+                        });
                     } else {
-                        if (tocaNave == true) {
-                            finPorDerrota = true;
-                            e.setPosicionCentral(nuevaFila, nuevaCol);
-                        } else {
-                            e.setPosicionCentral(nuevaFila, nuevaCol);
-                        }
+                        return false;
                     }
+                });
 
-                    dibujarActor(e, EstadoPixel.ENEMIGO);
+                if (chocaCompi == true) {
+                    nuevaFila = e.getFilaCentral();
+                    nuevaCol = e.getColumnaCentral();
                 }
-            }
 
-            if (finPorDerrota == true) {
-                detenerTimers();
-                estadoJuego.set("DERROTA");
-            }
+                e.setPosicionCentral(nuevaFila, nuevaCol);
+            });
+            contadorTicks = 0;
         }
-    }
 
-    private void moverDisparos() {
-        Iterator<Disparo> iterator = listaDisparos.iterator();
+        List<Disparo> disparosBorrados = listaDisparos.stream()
+                .filter(d -> listaEnemigos.stream().anyMatch(e -> chocan(d, e)))
+                .toList();
 
-        while (iterator.hasNext()) {
-            Disparo d = iterator.next();
+        List<Enemigo> enemigosBorrados = listaEnemigos.stream()
+                .filter(e -> disparosBorrados.stream().anyMatch(d -> chocan(d, e)))
+                .toList();
 
-            dibujarActor(d, EstadoPixel.VACIO);
+        listaDisparos.removeAll(disparosBorrados);
+        listaEnemigos.removeAll(enemigosBorrados);
 
-            int nuevaFila = d.getFilaCentral() - 1;
-            int col = d.getColumnaCentral();
-
-            // Comprobamos si la nueva posición entera se sale por arriba
-            boolean salePorArriba = false;
-            for (int[] delta : d.getForma()) {
-                if (nuevaFila + delta[0] < 0) {
-                    salePorArriba = true;
-                }
-            }
-
-            if (salePorArriba == true) {
-                iterator.remove();
+        // 5. Evaluar estado de la partida y redibujar
+        if (listaEnemigos.isEmpty()) {
+            detenerTimers();
+            cambiarEstado(new EstadoVictoria());
+        } else {
+            boolean derrota = listaEnemigos.stream().anyMatch(this::tocaFondoONave);
+            if (derrota == true) {
+                detenerTimers();
+                cambiarEstado(new EstadoDerrota());
             } else {
-                boolean impacto = false;
-                for (int[] delta : d.getForma()) {
-                    int fReal = nuevaFila + delta[0];
-                    int cReal = col + delta[1];
-                    if (fReal < FILAS) {
-                        if (tablero[fReal][cReal].getEstadoPixel() == EstadoPixel.ENEMIGO) {
-                            impacto = true;
-                        }
-                    }
-                }
-
-                if (impacto == true) {
-                    iterator.remove();
-
-                    boolean enemigoEncontrado = false;
-                    Iterator<Enemigo> itEnemigo = listaEnemigos.iterator();
-
-                    // Seguro anti-doble borrado
-                    while (itEnemigo.hasNext() && enemigoEncontrado == false) {
-                        Enemigo e = itEnemigo.next();
-
-                        // Algun pixel del disparo choca con algún pixel del enemigo?
-                        for (int[] deltaDisp : d.getForma()) {
-                            int fDisp = nuevaFila + deltaDisp[0];
-                            int cDisp = col + deltaDisp[1];
-
-                            for (int[] deltaEne : e.getForma()) {
-                                int fEne = e.getFilaCentral() + deltaEne[0];
-                                int cEne = e.getColumnaCentral() + deltaEne[1];
-
-                                if (fDisp == fEne) {
-                                    if (cDisp == cEne) {
-                                        // Comprobamos que no lo hayamos borrado ya en este mismo chequeo
-                                        if (enemigoEncontrado == false) {
-                                            dibujarActor(e, EstadoPixel.VACIO);
-                                            itEnemigo.remove();
-                                            enemigoEncontrado = true;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    if (listaEnemigos.isEmpty()) {
-                        detenerTimers();
-                        estadoJuego.set("VICTORIA");
-                    }
-                } else {
-                    d.setPosicionCentral(nuevaFila, col);
-                    dibujarActor(d, EstadoPixel.DISPARO);
-                }
+                listaEnemigos.forEach(e -> dibujarActor(e, EstadoPixel.ENEMIGO));
+                listaDisparos.forEach(d -> dibujarActor(d, EstadoPixel.DISPARO));
             }
         }
     }
@@ -378,30 +313,32 @@ public class GameModel {
 
     public void moverNaveIzquierda() {
         if (nave != null) {
-            boolean puede = true;
-            for (int[] delta : nave.getForma()) {
-                int cReal = nave.getColumnaCentral() + delta[1] - 1;
-                if (cReal < 0) {
-                    puede = false;
-                }
-            }
-            if (puede == true) {
-                boolean choca = false;
+            if (estadoActualObj instanceof EstadoActivo) {
+                boolean puede = true;
                 for (int[] delta : nave.getForma()) {
-                    int fReal = nave.getFilaCentral() + delta[0];
                     int cReal = nave.getColumnaCentral() + delta[1] - 1;
-                    if (tablero[fReal][cReal].getEstadoPixel() == EstadoPixel.ENEMIGO) {
-                        choca = true;
+                    if (cReal < 0) {
+                        puede = false;
                     }
                 }
+                if (puede == true) {
+                    boolean choca = false;
+                    for (int[] delta : nave.getForma()) {
+                        int fReal = nave.getFilaCentral() + delta[0];
+                        int cReal = nave.getColumnaCentral() + delta[1] - 1;
+                        if (tablero[fReal][cReal].getEstadoPixel() == EstadoPixel.ENEMIGO) {
+                            choca = true;
+                        }
+                    }
 
-                if (choca == true) {
-                    detenerTimers();
-                    estadoJuego.set("DERROTA");
-                } else {
-                    dibujarActor(nave, EstadoPixel.VACIO);
-                    nave.setPosicionCentral(nave.getFilaCentral(), nave.getColumnaCentral() - 1);
-                    dibujarActor(nave, EstadoPixel.NAVE);
+                    if (choca == true) {
+                        detenerTimers();
+                        cambiarEstado(new EstadoDerrota());
+                    } else {
+                        dibujarActor(nave, EstadoPixel.VACIO);
+                        nave.setPosicionCentral(nave.getFilaCentral(), nave.getColumnaCentral() - 1);
+                        dibujarActor(nave, EstadoPixel.NAVE);
+                    }
                 }
             }
         }
@@ -409,30 +346,32 @@ public class GameModel {
 
     public void moverNaveDerecha() {
         if (nave != null) {
-            boolean puede = true;
-            for (int[] delta : nave.getForma()) {
-                int cReal = nave.getColumnaCentral() + delta[1] + 1;
-                if (cReal >= COLUMNAS) {
-                    puede = false;
-                }
-            }
-            if (puede == true) {
-                boolean choca = false;
+            if (estadoActualObj instanceof EstadoActivo) {
+                boolean puede = true;
                 for (int[] delta : nave.getForma()) {
-                    int fReal = nave.getFilaCentral() + delta[0];
                     int cReal = nave.getColumnaCentral() + delta[1] + 1;
-                    if (tablero[fReal][cReal].getEstadoPixel() == EstadoPixel.ENEMIGO) {
-                        choca = true;
+                    if (cReal >= COLUMNAS) {
+                        puede = false;
                     }
                 }
+                if (puede == true) {
+                    boolean choca = false;
+                    for (int[] delta : nave.getForma()) {
+                        int fReal = nave.getFilaCentral() + delta[0];
+                        int cReal = nave.getColumnaCentral() + delta[1] + 1;
+                        if (tablero[fReal][cReal].getEstadoPixel() == EstadoPixel.ENEMIGO) {
+                            choca = true;
+                        }
+                    }
 
-                if (choca == true) {
-                    detenerTimers();
-                    estadoJuego.set("DERROTA");
-                } else {
-                    dibujarActor(nave, EstadoPixel.VACIO);
-                    nave.setPosicionCentral(nave.getFilaCentral(), nave.getColumnaCentral() + 1);
-                    dibujarActor(nave, EstadoPixel.NAVE);
+                    if (choca == true) {
+                        detenerTimers();
+                        cambiarEstado(new EstadoDerrota());
+                    } else {
+                        dibujarActor(nave, EstadoPixel.VACIO);
+                        nave.setPosicionCentral(nave.getFilaCentral(), nave.getColumnaCentral() + 1);
+                        dibujarActor(nave, EstadoPixel.NAVE);
+                    }
                 }
             }
         }
@@ -440,30 +379,32 @@ public class GameModel {
 
     public void moverNaveArriba() {
         if (nave != null) {
-            boolean puede = true;
-            for (int[] delta : nave.getForma()) {
-                int fReal = nave.getFilaCentral() + delta[0] - 1;
-                if (fReal < 0) {
-                    puede = false;
-                }
-            }
-            if (puede == true) {
-                boolean choca = false;
+            if (estadoActualObj instanceof EstadoActivo) {
+                boolean puede = true;
                 for (int[] delta : nave.getForma()) {
                     int fReal = nave.getFilaCentral() + delta[0] - 1;
-                    int cReal = nave.getColumnaCentral() + delta[1];
-                    if (tablero[fReal][cReal].getEstadoPixel() == EstadoPixel.ENEMIGO) {
-                        choca = true;
+                    if (fReal < 0) {
+                        puede = false;
                     }
                 }
+                if (puede == true) {
+                    boolean choca = false;
+                    for (int[] delta : nave.getForma()) {
+                        int fReal = nave.getFilaCentral() + delta[0] - 1;
+                        int cReal = nave.getColumnaCentral() + delta[1];
+                        if (tablero[fReal][cReal].getEstadoPixel() == EstadoPixel.ENEMIGO) {
+                            choca = true;
+                        }
+                    }
 
-                if (choca == true) {
-                    detenerTimers();
-                    estadoJuego.set("DERROTA");
-                } else {
-                    dibujarActor(nave, EstadoPixel.VACIO);
-                    nave.setPosicionCentral(nave.getFilaCentral() - 1, nave.getColumnaCentral());
-                    dibujarActor(nave, EstadoPixel.NAVE);
+                    if (choca == true) {
+                        detenerTimers();
+                        cambiarEstado(new EstadoDerrota());
+                    } else {
+                        dibujarActor(nave, EstadoPixel.VACIO);
+                        nave.setPosicionCentral(nave.getFilaCentral() - 1, nave.getColumnaCentral());
+                        dibujarActor(nave, EstadoPixel.NAVE);
+                    }
                 }
             }
         }
@@ -471,34 +412,37 @@ public class GameModel {
 
     public void moverNaveAbajo() {
         if (nave != null) {
-            boolean puede = true;
-            for (int[] delta : nave.getForma()) {
-                int fReal = nave.getFilaCentral() + delta[0] + 1;
-                if (fReal >= FILAS) {
-                    puede = false;
-                }
-            }
-            if (puede == true) {
-                boolean choca = false;
+            if (estadoActualObj instanceof EstadoActivo) {
+                boolean puede = true;
                 for (int[] delta : nave.getForma()) {
                     int fReal = nave.getFilaCentral() + delta[0] + 1;
-                    int cReal = nave.getColumnaCentral() + delta[1];
-                    if (tablero[fReal][cReal].getEstadoPixel() == EstadoPixel.ENEMIGO) {
-                        choca = true;
+                    if (fReal >= FILAS) {
+                        puede = false;
                     }
                 }
+                if (puede == true) {
+                    boolean choca = false;
+                    for (int[] delta : nave.getForma()) {
+                        int fReal = nave.getFilaCentral() + delta[0] + 1;
+                        int cReal = nave.getColumnaCentral() + delta[1];
+                        if (tablero[fReal][cReal].getEstadoPixel() == EstadoPixel.ENEMIGO) {
+                            choca = true;
+                        }
+                    }
 
-                if (choca == true) {
-                    detenerTimers();
-                    estadoJuego.set("DERROTA");
-                } else {
-                    dibujarActor(nave, EstadoPixel.VACIO);
-                    nave.setPosicionCentral(nave.getFilaCentral() + 1, nave.getColumnaCentral());
-                    dibujarActor(nave, EstadoPixel.NAVE);
+                    if (choca == true) {
+                        detenerTimers();
+                        cambiarEstado(new EstadoDerrota());
+                    } else {
+                        dibujarActor(nave, EstadoPixel.VACIO);
+                        nave.setPosicionCentral(nave.getFilaCentral() + 1, nave.getColumnaCentral());
+                        dibujarActor(nave, EstadoPixel.NAVE);
+                    }
                 }
             }
         }
     }
+
     public void setTipoNaveSeleccionada(String tipoNave) {
         this.tipoNaveSeleccionada = tipoNave;
     }
@@ -513,34 +457,30 @@ public class GameModel {
 
     public void disparar() {
         if (nave != null) {
-            //cooldown de disparo añadido para evitar spammear
-            long ahora = System.currentTimeMillis();
-            if (ahora - ultimoDisparo < COOLDOWN_DISPARO){
-                return;
-            }
-
-            // Buscamos el píxel mas alto de la nave actual
-            int minDeltaNave = 0;
-            for (int[] delta : nave.getForma()) {
-                if (delta[0] < minDeltaNave) {
-                    minDeltaNave = delta[0];
+            if (estadoActualObj instanceof EstadoActivo) {
+                long ahora = System.currentTimeMillis();
+                if (ahora - ultimoDisparo < COOLDOWN_DISPARO){
+                    return;
                 }
-            }
 
-            // calculamos la fila real más alta de la nave en el tablero
-            int filaMasAltaNave = nave.getFilaCentral() + minDeltaNave;
+                int minDeltaNave = 0;
+                for (int[] delta : nave.getForma()) {
+                    if (delta[0] < minDeltaNave) {
+                        minDeltaNave = delta[0];
+                    }
+                }
 
-            // el disparo debe apoyar su parte MAS BAJA justo 1 píxel por encima del techo de la nave
-            int filaFondoDisparo = filaMasAltaNave - 1;
+                int filaMasAltaNave = nave.getFilaCentral() + minDeltaNave;
+                int filaFondoDisparo = filaMasAltaNave - 1;
 
-            if (filaFondoDisparo >= 0) {
-                estrategiaActual.realizarDisparo(filaFondoDisparo, nave.getColumnaCentral(), listaDisparos);
+                if (filaFondoDisparo >= 0) {
+                    estrategiaActual.realizarDisparo(filaFondoDisparo, nave.getColumnaCentral(), listaDisparos);
 
-                if (listaDisparos.isEmpty() == false) {
-                    Disparo nuevoDisparo = listaDisparos.get(listaDisparos.size() - 1);
-                    dibujarActor(nuevoDisparo, EstadoPixel.DISPARO);
-
-                    ultimoDisparo = ahora;
+                    if (listaDisparos.isEmpty() == false) {
+                        Disparo nuevoDisparo = listaDisparos.get(listaDisparos.size() - 1);
+                        dibujarActor(nuevoDisparo, EstadoPixel.DISPARO);
+                        ultimoDisparo = ahora;
+                    }
                 }
             }
         }
@@ -548,7 +488,6 @@ public class GameModel {
 
     public void cambiarArma() {
         if (tipoNaveSeleccionada.equals("GREEN")) {
-            // GREEN solo alterna entre Unico y Flecha
             if (estrategiaActual instanceof DisparoUnico) {
                 estrategiaActual = new DisparoFlecha();
             } else {
@@ -556,7 +495,6 @@ public class GameModel {
             }
         } else {
             if (tipoNaveSeleccionada.equals("BLUE")) {
-                // BLUE solo alterna entre Unico y Rombo
                 if (estrategiaActual instanceof DisparoUnico) {
                     estrategiaActual = new DisparoRombo();
                 } else {
@@ -564,7 +502,6 @@ public class GameModel {
                 }
             } else {
                 if (tipoNaveSeleccionada.equals("RED")) {
-                    // RED rota entre los tres: Unico -> Flecha -> Rombo -> Unico...
                     if (estrategiaActual instanceof DisparoUnico) {
                         estrategiaActual = new DisparoFlecha();
                     } else {
