@@ -12,6 +12,5 @@ public class GameApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         ViewFactory.mostrarPantallaInicio();
-
     }
 }

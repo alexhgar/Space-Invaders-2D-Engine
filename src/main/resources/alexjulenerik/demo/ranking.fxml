@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+
+
+<AnchorPane prefHeight="400.0" prefWidth="606.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="alexjulenerik.demo.controller.RankingController">
+   <children>
+      <ImageView fitHeight="427.0" fitWidth="611.0" layoutX="-1.0" layoutY="-27.0" pickOnBounds="true">
+         <image>
+            <Image url="@sprites/prueba.png" />
+         </image>
+      </ImageView>
+      <Label layoutX="187.0" layoutY="14.0" prefHeight="45.0" prefWidth="236.0" text="TOP 10 RANKING" textFill="#f2ec54">
+         <font>
+            <Font size="30.0" />
+         </font>
+      </Label>
+      <ListView fx:id="listaRanking" layoutX="200.0" layoutY="74.0" prefHeight="252.0" prefWidth="200.0" style="-fx-background-color: transpoarent; -fx-control-inner-background: transparent;" />
+      <Button fx:id="btnVolver" layoutX="265.0" layoutY="346.0" mnemonicParsing="false" onAction="#onVolverClick" prefHeight="33.0" prefWidth="70.0" style="-fx-base: WHITE;" text="VOLVER" />
+   </children>
+</AnchorPane>
