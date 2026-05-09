@@ -43,6 +43,10 @@ public class GameModel {
     private int penalizacionAcumulada;
     private final List<Puntuacion> ranking = new ArrayList<>();
 
+    private String nombreJugador = "Invitado";
+
+    private final javafx.beans.property.IntegerProperty puntuacionVisual = new javafx.beans.property.SimpleIntegerProperty(0);
+
     private GameModel() {
         tablero = new Pixel[FILAS][COLUMNAS];
         for (int f = 0; f < FILAS; f++) {
@@ -302,18 +306,16 @@ public class GameModel {
 
         listaDisparos.removeAll(disparosBorrados);
         listaEnemigos.removeAll(enemigosBorrados);
+        // Actualizamos la propiedad para que la vista se entere
+        puntuacionVisual.set(calcularPuntuacion());
 
         // 5. Evaluar estado de la partida y redibujar
         if (listaEnemigos.isEmpty()) {
-            detenerTimers();
-            tiempoFin = System.currentTimeMillis();
-            cambiarEstado(new EstadoVictoria());
+            finalizarPartida(new EstadoVictoria());
         } else {
             boolean derrota = listaEnemigos.stream().anyMatch(this::tocaFondoONave);
             if (derrota == true) {
-                detenerTimers();
-                tiempoFin = System.currentTimeMillis();
-                cambiarEstado(new EstadoDerrota());
+                finalizarPartida(new EstadoDerrota());
             } else {
                 listaEnemigos.forEach(e -> dibujarActor(e, EstadoPixel.ENEMIGO));
                 listaDisparos.forEach(d -> dibujarActor(d, EstadoPixel.DISPARO));
@@ -346,8 +348,7 @@ public class GameModel {
                     }
 
                     if (choca == true) {
-                        detenerTimers();
-                        cambiarEstado(new EstadoDerrota());
+                        finalizarPartida(new EstadoDerrota());
                     } else {
                         dibujarActor(nave, EstadoPixel.VACIO);
                         nave.setPosicionCentral(nave.getFilaCentral(), nave.getColumnaCentral() - 1);
@@ -379,8 +380,7 @@ public class GameModel {
                     }
 
                     if (choca == true) {
-                        detenerTimers();
-                        cambiarEstado(new EstadoDerrota());
+                        finalizarPartida(new EstadoDerrota());
                     } else {
                         dibujarActor(nave, EstadoPixel.VACIO);
                         nave.setPosicionCentral(nave.getFilaCentral(), nave.getColumnaCentral() + 1);
@@ -412,8 +412,7 @@ public class GameModel {
                     }
 
                     if (choca == true) {
-                        detenerTimers();
-                        cambiarEstado(new EstadoDerrota());
+                        finalizarPartida(new EstadoDerrota());
                     } else {
                         dibujarActor(nave, EstadoPixel.VACIO);
                         nave.setPosicionCentral(nave.getFilaCentral() - 1, nave.getColumnaCentral());
@@ -445,8 +444,7 @@ public class GameModel {
                     }
 
                     if (choca == true) {
-                        detenerTimers();
-                        cambiarEstado(new EstadoDerrota());
+                        finalizarPartida(new EstadoDerrota());
                     } else {
                         dibujarActor(nave, EstadoPixel.VACIO);
                         nave.setPosicionCentral(nave.getFilaCentral() + 1, nave.getColumnaCentral());
@@ -463,6 +461,10 @@ public class GameModel {
 
     public String getTipoNaveSeleccionada() {
         return this.tipoNaveSeleccionada;
+    }
+
+    public void setNombreJugador(String nombre) {
+        this.nombreJugador = nombre;
     }
 
     public SimpleStringProperty estadoJuegoProperty() {
@@ -492,10 +494,10 @@ public class GameModel {
                     }
 
                     if(estrategiaActual instanceof DisparoFlecha){
-                        penalizacionAcumulada += 5;
+                        penalizacionAcumulada += 15;
                     
                     }else if(estrategiaActual instanceof DisparoRombo){
-                        penalizacionAcumulada += 10;
+                        penalizacionAcumulada += 30;
                     }
                 }
             }
@@ -533,6 +535,10 @@ public class GameModel {
     }
 
     public int calcularPuntuacion(){
+        if (estadoActualObj instanceof EstadoDerrota) {
+            return 0;
+        }
+
         long finEfectivo = (tiempoFin > 0) ? tiempoFin : System.currentTimeMillis();
         long segundos = (finEfectivo - tiempoInicio)/1_000;
         int puntos = (int)(10_000 - segundos*100 - penalizacionAcumulada);
@@ -561,4 +567,16 @@ public class GameModel {
     public int getPuntuacionParcial(){
         return calcularPuntuacion();
     }
+
+    public javafx.beans.property.IntegerProperty puntuacionVisualProperty() {
+        return puntuacionVisual;
+    }
+
+    private void finalizarPartida(EstadoJuego estadoFinal) {
+        detenerTimers();
+        tiempoFin = System.currentTimeMillis();
+        cambiarEstado(estadoFinal);
+        registrarPuntuacion(nombreJugador);
+    }
+
 }

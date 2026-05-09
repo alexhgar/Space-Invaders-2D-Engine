@@ -6,24 +6,28 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
-import javafx.scene.control.Label;
+import javafx.scene.control.Label; // Asegúrate de tener este import
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import alexjulenerik.demo.view.ViewFactory;
+import javafx.stage.Stage;
 
 import java.net.URL;
 import java.util.ResourceBundle;
 
 //ERIK
-public class GameController implements Initializable { //Initializable se asegura de que las variables fmxl no son nulas
-    //Enlazar los paneles de gameview.fxml
+public class GameController implements Initializable {
     @FXML
     private GridPane pnlGame;
     @FXML
     private BorderPane pnlMain;
+
+    // 1. Añadimos la referencia a la etiqueta de puntos del FXML
+    @FXML
+    private Label lblPuntos;
 
     private static final GameModel modelo = GameModel.getInstance();
 
@@ -35,25 +39,34 @@ public class GameController implements Initializable { //Initializable se asegur
                 pnlGame.add(crearPixel(fila,columna),columna,fila);
             }
         }
+
+        // 2. Vinculamos la etiqueta con la puntuación del modelo
+        // Esto hace que el texto cambie solo cada vez que el modelo actualiza los puntos
+        lblPuntos.textProperty().bind(modelo.puntuacionVisualProperty().asString());
+
         modelo.estadoJuegoProperty().addListener((observable, viejoEstado, nuevoEstado) -> {
             if (nuevoEstado.equals("VICTORIA")) {
-                Platform.runLater(() -> ViewFactory.mostrarAlertaFin("Victoria", "Has derrotado a los enemigos"));
+                Platform.runLater(() -> {
+                    Stage stage = (Stage) pnlMain.getScene().getWindow();
+                    ViewFactory.mostrarAlertaFin("Victoria", "Has derrotado a los enemigos", stage);
+                });
             } else {
                 if (nuevoEstado.equals("DERROTA")) {
-                    Platform.runLater(() -> ViewFactory.mostrarAlertaFin("Derrota", "Suerte la proxima vez"));
+                    Platform.runLater(() -> {
+                        Stage stage = (Stage) pnlMain.getScene().getWindow();
+                        ViewFactory.mostrarAlertaFin("Derrota", "Suerte la proxima vez", stage);
+                    });
                 }
             }
         });
         modelo.inicializarPartida();
-        //javafx empieza a escuchar las teclas pulsadas por teclado
+
         Platform.runLater(() -> {
             pnlMain.requestFocus();
         });
     }
 
-    //Metodo para crear el Pixel. Este metodo no se puede hacer en la clase Pixel ya que rompería el MVC.
     private Node crearPixel(int fila, int columna){
-        //Crea cada pixel individual
         Rectangle rectangulo = new Rectangle(10,10);
         var pixel = modelo.getPixel(fila,columna);
         setPixelColor(rectangulo,pixel);
@@ -62,12 +75,10 @@ public class GameController implements Initializable { //Initializable se asegur
         return rectangulo;
     }
 
-    //Metodo para definir el color del Pixel. Este metodo no se puede hacer en la clase Pixel ya que rompería el MVC.
     private void setPixelColor(Rectangle rect, Pixel pixel){
         var estado = pixel.getEstadoPixel();
         switch(estado){
             case NAVE -> {
-                // Leemos el tipo de nave para asignarle su color
                 String tipo = modelo.getTipoNaveSeleccionada();
                 if (tipo.equals("BLUE")) {
                     rect.setFill(Color.BLUE);
@@ -86,8 +97,6 @@ public class GameController implements Initializable { //Initializable se asegur
     }
 
     public void controles(KeyEvent evento){
-        // gestor de eventos que se llama cuando se pulsa una tecla
-        // y que llama a los metodos de movimiento del modelo
         switch (evento.getCode()){
             case W -> modelo.moverNaveArriba();
             case S -> modelo.moverNaveAbajo();

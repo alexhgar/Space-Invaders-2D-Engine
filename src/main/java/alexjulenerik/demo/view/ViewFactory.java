@@ -24,7 +24,7 @@ public class ViewFactory {
         //Cargar el gameview
         FXMLLoader fxmlLoader = new FXMLLoader(GameApplication.class.getResource("gameview.fxml"));
         //Tamaño 600x1000 ya que 60x100 se veria muy pequeño (mismas proporciones)
-        Scene scene = new Scene(fxmlLoader.load(),1040,602 );
+        Scene scene = new Scene(fxmlLoader.load(),1040,670 );
         //Crear el stage
         Stage stage = new Stage();
         stage.setTitle("Space Invaders");
@@ -33,7 +33,7 @@ public class ViewFactory {
     }
 
     public static void mostrarPantallaRanking() throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(ViewFactory.class.getResource("ranking.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(GameApplication.class.getResource("ranking.fxml"));
         Scene scene = new Scene(fxmlLoader.load(),600,400);
         Stage stage = new Stage();
         stage.setTitle("Ranking");
@@ -41,12 +41,21 @@ public class ViewFactory {
         stage.show();
     }
 
-    public static void mostrarAlertaFin(String titulo, String mensaje) {
+    public static void mostrarAlertaFin(String titulo, String mensaje, Stage stageActual) {
         Alert alerta = new Alert(Alert.AlertType.INFORMATION);
         alerta.setTitle("Fin de la partida");
         alerta.setHeaderText(titulo);
         alerta.setContentText(mensaje);
         alerta.showAndWait();
-        Platform.exit();
+
+        // En lugar de salir, cerramos la ventana de juego
+        if (stageActual != null) {
+            stageActual.close();
+        }
+        try {
+            mostrarPantallaInicio();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

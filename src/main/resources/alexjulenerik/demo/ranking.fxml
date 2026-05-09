@@ -21,7 +21,7 @@
             <Font size="30.0" />
          </font>
       </Label>
-      <ListView fx:id="listaRanking" layoutX="200.0" layoutY="74.0" prefHeight="252.0" prefWidth="200.0" style="-fx-background-color: transpoarent; -fx-control-inner-background: transparent;" />
+      <ListView fx:id="listaRanking" layoutX="200.0" layoutY="74.0" prefHeight="252.0" prefWidth="200.0" style="-fx-background-color: transparent; -fx-control-inner-background: transparent;" />
       <Button fx:id="btnVolver" layoutX="265.0" layoutY="346.0" mnemonicParsing="false" onAction="#onVolverClick" prefHeight="33.0" prefWidth="70.0" style="-fx-base: WHITE;" text="VOLVER" />
    </children>
 </AnchorPane>

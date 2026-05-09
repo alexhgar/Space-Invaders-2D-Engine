@@ -64,26 +64,20 @@ public class InicioController {
             String nombre = campoNombre.getText();
 
             // Si el jugador no pone nada o pone solo espacios, le llamamos "Invitado"
-            /*if (nombre == null || nombre.trim().isEmpty()) {
+            if (nombre == null || nombre.trim().isEmpty()) {
                 modelo.setNombreJugador("Invitado");
             } else {
                 modelo.setNombreJugador(nombre);
-            }*/
-
-            modelo.setTipoNaveSeleccionada(tipoNaveElegida);
-            // llama a viewfactory y carga la pantalla del juego
-            ViewFactory.mostrarPantallaJuego();
-
-            Stage stage = (Stage) btnJugar.getScene().getWindow();
-
-            if (stage != null) {
-                stage.close();
-            } else {
-                System.out.println("Error: No se ha podido encontrar la ventana de inicio para cerrarla.");
             }
 
+            modelo.setTipoNaveSeleccionada(tipoNaveElegida);
+
+            ViewFactory.mostrarPantallaJuego();
+            Stage stage = (Stage) btnJugar.getScene().getWindow();
+            if (stage != null) {
+                stage.close();
+            }
         } catch (IOException e) {
-            System.out.println("Error al cargar la pantalla de juego.");
             e.printStackTrace();
         }
     }
