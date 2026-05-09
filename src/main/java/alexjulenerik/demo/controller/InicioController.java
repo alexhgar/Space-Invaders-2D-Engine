@@ -63,13 +63,13 @@ public class InicioController {
             // Capturar el nombre del jugador
             String nombre = campoNombre.getText();
 
-        /*    // Si el jugador no pone nada o pone solo espacios, le llamamos "Invitado"
-            if (nombre == null || nombre.trim().isEmpty()) {
+            // Si el jugador no pone nada o pone solo espacios, le llamamos "Invitado"
+            /*if (nombre == null || nombre.trim().isEmpty()) {
                 modelo.setNombreJugador("Invitado");
             } else {
                 modelo.setNombreJugador(nombre);
-            }
-        */
+            }*/
+
             modelo.setTipoNaveSeleccionada(tipoNaveElegida);
             // llama a viewfactory y carga la pantalla del juego
             ViewFactory.mostrarPantallaJuego();
@@ -93,7 +93,7 @@ public class InicioController {
         // Comentario temporal
         System.out.println("Botón ranking pulsado. En stand by hasta actualizar ViewFactory.");
 
-        /* try {
+         try {
             ViewFactory.mostrarPantallaRanking();
 
             Stage stage = (Stage) btnRanking.getScene().getWindow();
@@ -103,6 +103,6 @@ public class InicioController {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        */
+
     }
 }

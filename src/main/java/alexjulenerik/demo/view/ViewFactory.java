@@ -32,6 +32,15 @@ public class ViewFactory {
         stage.show();
     }
 
+    public static void mostrarPantallaRanking() throws IOException {
+        FXMLLoader fxmlLoader = new FXMLLoader(ViewFactory.class.getResource("ranking.fxml"));
+        Scene scene = new Scene(fxmlLoader.load(),600,400);
+        Stage stage = new Stage();
+        stage.setTitle("Ranking");
+        stage.setScene(scene);
+        stage.show();
+    }
+
     public static void mostrarAlertaFin(String titulo, String mensaje) {
         Alert alerta = new Alert(Alert.AlertType.INFORMATION);
         alerta.setTitle("Fin de la partida");
