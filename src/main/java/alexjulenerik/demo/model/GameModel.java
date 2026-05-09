@@ -8,6 +8,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Comparator;
+
 import javafx.beans.property.SimpleStringProperty;
 
 public class GameModel {
@@ -34,6 +36,12 @@ public class GameModel {
     private final SimpleStringProperty estadoJuego = new SimpleStringProperty("ACTIVO");
 
     private EstrategiaDisparo estrategiaActual;
+
+    private long tiempoInicio;
+    private long tiempoFin;
+
+    private int penalizacionAcumulada;
+    private final List<Puntuacion> ranking = new ArrayList<>();
 
     private GameModel() {
         tablero = new Pixel[FILAS][COLUMNAS];
@@ -85,6 +93,10 @@ public class GameModel {
         listaEnemigos.clear();
         listaDisparos.clear();
         estrategiaActual = new DisparoUnico();
+        
+        tiempoInicio = System.currentTimeMillis();
+        tiempoFin =0;
+        penalizacionAcumulada =0;
 
         nave = NaveFactory.crearNave(tipoNaveSeleccionada, 55, 50);
         dibujarActor(nave, EstadoPixel.NAVE);
@@ -294,11 +306,13 @@ public class GameModel {
         // 5. Evaluar estado de la partida y redibujar
         if (listaEnemigos.isEmpty()) {
             detenerTimers();
+            tiempoFin = System.currentTimeMillis();
             cambiarEstado(new EstadoVictoria());
         } else {
             boolean derrota = listaEnemigos.stream().anyMatch(this::tocaFondoONave);
             if (derrota == true) {
                 detenerTimers();
+                tiempoFin = System.currentTimeMillis();
                 cambiarEstado(new EstadoDerrota());
             } else {
                 listaEnemigos.forEach(e -> dibujarActor(e, EstadoPixel.ENEMIGO));
@@ -456,19 +470,14 @@ public class GameModel {
     }
 
     public void disparar() {
-        if (nave != null) {
+        if (nave != null || !(estadoActualObj instanceof EstadoActivo)) {
             if (estadoActualObj instanceof EstadoActivo) {
                 long ahora = System.currentTimeMillis();
                 if (ahora - ultimoDisparo < COOLDOWN_DISPARO){
                     return;
                 }
 
-                int minDeltaNave = 0;
-                for (int[] delta : nave.getForma()) {
-                    if (delta[0] < minDeltaNave) {
-                        minDeltaNave = delta[0];
-                    }
-                }
+                int minDeltaNave = nave.getForma().stream().mapToInt(delta -> delta[0]).min().orElse(0);
 
                 int filaMasAltaNave = nave.getFilaCentral() + minDeltaNave;
                 int filaFondoDisparo = filaMasAltaNave - 1;
@@ -480,6 +489,13 @@ public class GameModel {
                         Disparo nuevoDisparo = listaDisparos.get(listaDisparos.size() - 1);
                         dibujarActor(nuevoDisparo, EstadoPixel.DISPARO);
                         ultimoDisparo = ahora;
+                    }
+
+                    if(estrategiaActual instanceof DisparoFlecha){
+                        penalizacionAcumulada += 5;
+                    
+                    }else if(estrategiaActual instanceof DisparoRombo){
+                        penalizacionAcumulada += 10;
                     }
                 }
             }
@@ -514,5 +530,35 @@ public class GameModel {
                 }
             }
         }
+    }
+
+    public int calcularPuntuacion(){
+        long finEfectivo = (tiempoFin > 0) ? tiempoFin : System.currentTimeMillis();
+        long segundos = (finEfectivo - tiempoInicio)/1_000;
+        int puntos = (int)(10_000 - segundos*100 - penalizacionAcumulada);
+        return Math.max(0, puntos);
+    }
+
+    public void registrarPuntuacion(String nombreJugador){
+        int puntos =calcularPuntuacion();
+        ranking.add(new Puntuacion(nombreJugador, puntos));
+    }
+
+    public List<Puntuacion> getTopRanking(){
+        return ranking
+        .stream()
+        .sorted(Comparator.comparingInt(Puntuacion::getPuntos).reversed())
+        .limit(10)
+        .toList();
+    }
+
+    
+
+    public int getPenalizacionAcumulada(){
+        return penalizacionAcumulada;
+    }
+
+    public int getPuntuacionParcial(){
+        return calcularPuntuacion();
     }
 }
