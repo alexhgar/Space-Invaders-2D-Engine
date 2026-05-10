@@ -39,7 +39,6 @@ public class InicioController {
 
 
 
-
     @FXML
     public void seleccionarGreen(ActionEvent event){
         tipoNaveElegida = "GREEN";
@@ -64,14 +63,13 @@ public class InicioController {
             String nombre = campoNombre.getText();
 
             // Si el jugador no pone nada o pone solo espacios, le llamamos "Invitado"
-            if (nombre == null || nombre.trim().isEmpty()) {
+            if (nombre == null) {
                 modelo.setNombreJugador("Invitado");
             } else {
                 modelo.setNombreJugador(nombre);
             }
 
             modelo.setTipoNaveSeleccionada(tipoNaveElegida);
-
             ViewFactory.mostrarPantallaJuego();
             Stage stage = (Stage) btnJugar.getScene().getWindow();
             if (stage != null) {
@@ -84,12 +82,9 @@ public class InicioController {
 
     @FXML
     public void onVerRankingClick(ActionEvent event) {
-        // Comentario temporal
-        System.out.println("Botón ranking pulsado. En stand by hasta actualizar ViewFactory.");
 
          try {
             ViewFactory.mostrarPantallaRanking();
-
             Stage stage = (Stage) btnRanking.getScene().getWindow();
             if (stage != null) {
                 stage.close();
