@@ -117,7 +117,7 @@ public class GameModel {
                 colRandom = random.nextInt(COLUMNAS - 10) + 5;
                 int cTemp = colRandom; // Necesario para la lambda
 
-                // HU10: Comprobación de distancia de enemigos con Streams
+                // Comprobacion de distancia de enemigos con Streams
                 boolean cerca = listaEnemigos.stream().anyMatch(e -> {
                     if (Math.abs(e.getColumnaCentral() - cTemp) <= 3) {
                         return true;
@@ -157,7 +157,7 @@ public class GameModel {
             @Override
             public void run() {
                 Platform.runLater(() -> {
-                    // PATRÓN STATE: Llamamos al estado para que decida qué hacer
+                    // Llamamos al estado para que decida qué hacer
                     estadoActualObj.actualizarLogica(GameModel.getInstance());
                 });
             }
@@ -210,11 +210,11 @@ public class GameModel {
 
 
     public void logicaJuegoActivo() {
-        // 1. Borrar dibujos antiguos
+        // Borrar dibujos antiguos
         listaDisparos.forEach(d -> dibujarActor(d, EstadoPixel.VACIO));
         listaEnemigos.forEach(e -> dibujarActor(e, EstadoPixel.VACIO));
 
-        // 2. Mover disparos y limpiar los que salen del tablero
+        // Mover disparos y limpiar los que salen del tablero
         listaDisparos.forEach(d -> d.setPosicionCentral(d.getFilaCentral() - 1, d.getColumnaCentral()));
         listaDisparos.removeIf(d -> d.getForma().stream().anyMatch(delta -> {
             if (d.getFilaCentral() + delta[0] < 0) {
@@ -224,7 +224,7 @@ public class GameModel {
             }
         }));
 
-        // 3. Mover enemigos
+        // Mover enemigos
         contadorTicks++;
         if (contadorTicks >= 4) {
             Random random = new Random();
@@ -309,7 +309,7 @@ public class GameModel {
         // Actualizamos la propiedad para que la vista se entere
         puntuacionVisual.set(calcularPuntuacion());
 
-        // 5. Evaluar estado de la partida y redibujar
+        // Evaluar estado de la partida y redibujar
         if (listaEnemigos.isEmpty()) {
             finalizarPartida(new EstadoVictoria());
         } else {

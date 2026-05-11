@@ -6,7 +6,7 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
-import javafx.scene.control.Label; // Asegúrate de tener este import
+import javafx.scene.control.Label;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
@@ -25,7 +25,7 @@ public class GameController implements Initializable {
     @FXML
     private BorderPane pnlMain;
 
-    // 1. Añadimos la referencia a la etiqueta de puntos del FXML
+    //Añadimos la referencia a la etiqueta de puntos del FXML
     @FXML
     private Label lblPuntos;
 
@@ -40,7 +40,7 @@ public class GameController implements Initializable {
             }
         }
 
-        // 2. Vinculamos la etiqueta con la puntuación del modelo
+        // Vinculamos la etiqueta con la puntuación del modelo
         // Esto hace que el texto cambie solo cada vez que el modelo actualiza los puntos
         lblPuntos.textProperty().bind(modelo.puntuacionVisualProperty().asString());
 

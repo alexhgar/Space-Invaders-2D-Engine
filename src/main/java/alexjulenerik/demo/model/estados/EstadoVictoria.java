@@ -5,7 +5,7 @@ import alexjulenerik.demo.model.GameModel;
 public class EstadoVictoria implements EstadoJuego {
     @Override
     public void actualizarLogica(GameModel contexto) {
-        // En victoria, el juego se congela (no hay lógica de movimiento)
+        // En victoria, el juego se congela
     }
 
     @Override

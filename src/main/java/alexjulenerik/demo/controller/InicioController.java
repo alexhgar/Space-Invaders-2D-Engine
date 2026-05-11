@@ -62,7 +62,7 @@ public class InicioController {
             // Capturar el nombre del jugador
             String nombre = campoNombre.getText();
 
-            // Si el jugador no pone nada o pone solo espacios, le llamamos "Invitado"
+            // Si el jugador no pone nada o pone solo espacios, le llamamos "Invitado
             if (nombre == null) {
                 modelo.setNombreJugador("Invitado");
             } else {

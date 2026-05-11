@@ -29,7 +29,7 @@ public class RankingController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        // 1. Hacemos que las celdas sean blancas y sin fondo
+        // Hacemos que las celdas sean blancas y sin fondo
         listaRanking.setCellFactory(lv -> new ListCell<String>() {
             @Override
             protected void updateItem(String item, boolean empty) {
@@ -44,7 +44,7 @@ public class RankingController implements Initializable {
                 }
             }
         });
-        // 2. Pedimos los datos al modelo y añadimos la posición
+        // Pedimos los datos al modelo y añadimos la posición
         int posicion = 1;
         for (Puntuacion p : GameModel.getInstance().getTopRanking()) {
             listaRanking.getItems().add(posicion + ". " + p.toString());
