@@ -1,4 +1,4 @@
-# Space Invaders Clone & Custom 2D Java Engine
+# Space Invaders | Custom 2D Java Engine
 
 ![Java](https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=java&logoColor=white)
 ![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)
@@ -7,7 +7,7 @@
 > **Nota:** Este proyecto fue desarrollado como trabajo colaborativo universitario. Se expone aquí la arquitectura del motor 2D y la implementación técnica.
 
 ## Descripción del Proyecto
-Desarrollo desde cero de un clon del clásico Space Invaders. En lugar de utilizar librerías gráficas externas o motores preconstruidos, el equipo programó un motor 2D propio en Java, gestionando de forma manual el renderizado por fotogramas, la memoria y las físicas básicas.
+Desarrollo desde cero de un clon del mítico videojuego Space Invaders. En lugar de utilizar librerías gráficas externas o motores preconstruidos, el equipo programó un motor 2D propio en Java, gestionando de forma manual el renderizado por fotogramas, la memoria y las físicas básicas.
 
 El desarrollo se centró en la aplicación rigurosa de los principios de la Programación Orientada a Objetos (POO) y el uso de un flujo de trabajo estructurado con control de versiones en equipo.
 
